@@ -37,7 +37,7 @@ define( 'MIHDAN_MAILRU_PULSE_FEED_SLUG', 'mihdan-mailru-pulse-feed' );
 static $plugin;
 
 if ( ! isset( $plugin ) ) {
-	require_once MIHDAN_MAILRU_PULSE_FEED_PATH . 'vendor/autoload.php';
+	require_once MIHDAN_MAILRU_PULSE_FEED_PATH . '/vendor/autoload.php';
 	$plugin = new Mihdan_Mailru_Pulse_Feed_Main();
 }
 

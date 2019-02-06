@@ -10,6 +10,9 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 
 	private $slug;
 	private $feedname;
+	private $allowable_tags = array(
+		'p' => array(),
+	);
 
 	public function __construct() {
 		$this->setup();
@@ -25,10 +28,19 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 		add_action( 'init', array( $this, 'flush_rewrite_rules' ), 99 );
 		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
 		add_filter( 'wpseo_include_rss_footer', array( $this, 'hide_wpseo_rss_footer' ) );
+		add_filter( 'the_excerpt_rss', array( $this, 'the_excerpt_rss' ), 99 );
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 
 		register_activation_hook( __FILE__, array( $this, 'on_activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'on_deactivate' ) );
+	}
+
+	function the_excerpt_rss( $excerpt ) {
+		if ( is_feed( $this->feedname ) ) {
+			$excerpt = wp_kses( $excerpt, $this->allowable_tags );
+		}
+
+		return $excerpt;
 	}
 
 	public function after_setup_theme() {
@@ -40,7 +52,7 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 	}
 
 	public function require_feed_template() {
-		require MIHDAN_MAILRU_PULSE_FEED_PATH . 'templates/feed.php';
+		require MIHDAN_MAILRU_PULSE_FEED_PATH . '/templates/feed.php';
 	}
 
 	public function flush_rewrite_rules() {
