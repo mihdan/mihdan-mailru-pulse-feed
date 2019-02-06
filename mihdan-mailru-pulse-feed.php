@@ -15,6 +15,8 @@
  * Text Domain: mihdan-mailru-pulse-feed
  * Domain Path: /languages/
  *
+ * GitHub Plugin URI: https://github.com/mihdan/mihdan-mailru-pulse-feed
+ *
  * @package mihdan-mailru-pulse-feed
  * @author  Mikhail Kobzarev
  */
@@ -26,6 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'MIHDAN_MAILRU_PULSE_FEED_VERSION', '0.0.1' );
 define( 'MIHDAN_MAILRU_PULSE_FEED_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'MIHDAN_MAILRU_PULSE_FEED_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+define( 'MIHDAN_MAILRU_PULSE_FEED_SLUG', 'mihdan-mailru-pulse-feed' );
 
 /**
  * Init plugin class on plugin load.
