@@ -96,3 +96,5 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 		flush_rewrite_rules();
 	}
 }
+
+// eof;
