@@ -32,7 +32,7 @@ add_filter( 'mihdan_mailru_pulse_feed_feedname', function() {
 
 = Can I contribute? =
 
-Yes you can! Join in on our [GitHub repository](https://github.com/mihdan/cyr2lat)
+Yes you can! Join in on our [GitHub repository](https://github.com/mihdan/mihdan-mailru-pulse-feed)
 
 == Changelog ==
 
