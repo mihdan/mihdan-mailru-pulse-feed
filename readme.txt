@@ -10,7 +10,8 @@ WordPress плагин, формирующий ленту для новой ре
 
 == Description ==
 
-WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.g human-readable URLs.
+WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
+Сразу после установки и активации плагина лента будет доступна по адресу: `http://example.com/feed/mihdan-mailru-pulse-feed`
 
 == Installation ==
 
@@ -18,6 +19,16 @@ WordPress плагин, формирующий ленту для новой ре
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Frequently Asked Questions ==
+
+= Как изменить слаг ленты =
+
+Добавьте в файл `functions.php` вашей активной темы следующий код (лучше это делать в дочерней теме):
+
+`
+add_filter( 'mihdan_mailru_pulse_feed_feedname', function() {
+    return 'mailru'
+} );
+`
 
 = Can I contribute? =
 
