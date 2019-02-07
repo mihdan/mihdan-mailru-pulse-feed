@@ -31,8 +31,8 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 		add_filter( 'the_excerpt_rss', array( $this, 'the_excerpt_rss' ), 99 );
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 
-		register_activation_hook( __FILE__, array( $this, 'on_activate' ) );
-		register_deactivation_hook( __FILE__, array( $this, 'on_deactivate' ) );
+		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
+		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
 	}
 
 	function the_excerpt_rss( $excerpt ) {

@@ -28,6 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'MIHDAN_MAILRU_PULSE_FEED_VERSION', '0.0.1' );
 define( 'MIHDAN_MAILRU_PULSE_FEED_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'MIHDAN_MAILRU_PULSE_FEED_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+define( 'MIHDAN_MAILRU_PULSE_FEED_FILE', __FILE__ );
 define( 'MIHDAN_MAILRU_PULSE_FEED_SLUG', 'mihdan-mailru-pulse-feed' );
 
 /**
