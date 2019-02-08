@@ -1,10 +1,4 @@
 <?php
-/**
- * @link https://yandex.ru/support/webmaster/turbo/feed.html
- * @link https://yandex.ru/support/webmaster/turbo/rss-elements.html
- *
- * @var Mihdan_Yandex_Turbo_Feed $this
- */
 header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=UTF-8', true );
 echo '<?xml version="1.0" encoding="UTF-8"?' . '>';
 ?>
@@ -17,7 +11,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?' . '>';
 		<?php do_action( 'rss2_head' ); ?>
 		<?php while ( have_posts() ) : ?>
 			<?php the_post(); ?>
-			<item turbo="true">
+			<item>
 				<link><?php the_permalink_rss(); ?></link>
 				<title><?php the_title_rss(); ?></title>
 				<author><?php the_author(); ?></author>
