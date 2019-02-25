@@ -9,7 +9,7 @@
  * Author URI: https://www.kobzarev.com/
  * Requires at least: 2.3
  * Tested up to: 5.1
- * Version: 0.0.1
+ * Version: 0.0.2
  * Stable tag: 0.0.2
  *
  * Text Domain: mihdan-mailru-pulse-feed
