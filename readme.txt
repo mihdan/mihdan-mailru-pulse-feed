@@ -2,9 +2,9 @@
 Contributors: mihdan
 Tags: mailru, pulse, feed
 Requires at least: 2.3
-Tested up to: 5.1
-Stable tag: 0.0.2
-Requires PHP: 5.3
+Tested up to: 5.3
+Stable tag: 0.1
+Requires PHP: 5.2.60
 
 WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
 
@@ -54,6 +54,11 @@ add_filter( 'mihdan_mailru_pulse_feed_feedname', function() {
 Присоединяйтесь к нам в [официальном GitHub репозитории](https://github.com/mihdan/mihdan-mailru-pulse-feed)
 
 == Changelog ==
+
+= 0.1 (24.10.2019) =
+* Добавил страницу настроек
+* Добавил систему уведомлений
+* Обновил зависимости
 
 = 0.0.2 (25.02.2019) =
 * Обновил FAQ
