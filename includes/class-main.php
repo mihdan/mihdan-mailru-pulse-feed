@@ -17,12 +17,15 @@ class Main {
 		'p' => array(),
 	);
 
-	private $total_posts = 100;
+	/**
+	 * @var int
+	 */
+	private $total_posts;
 
 	/**
 	 * @var array список постов для вывода
 	 */
-	private $post_type = array( 'post', 'publication' );
+	private $post_type;
 
 	/**
 	 * @var Settings
@@ -34,6 +37,11 @@ class Main {
 	 */
 	private $notifications;
 
+	/**
+	 * @var WP_OSA
+	 */
+	private $wposa_obj;
+
 	public function __construct() {
 		$this->setup();
 		$this->hooks();
@@ -41,8 +49,12 @@ class Main {
 
 	private function setup() {
 		$this->slug          = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
-		$this->settings      = new Settings();
+		$this->wposa_obj     = new WP_OSA();
+		$this->settings      = new Settings( $this->wposa_obj );
 		$this->notifications = new Notifications();
+
+		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
+		$this->total_posts = $this->wposa_obj->get_option( 'total_posts', 'feed', 10 );
 	}
 
 	private function hooks() {
@@ -67,12 +79,15 @@ class Main {
 		if ( $wp_query->is_main_query() && $wp_query->is_feed( $this->feedname ) ) {
 			// Ограничить посты 50-ю
 			$wp_query->set( 'posts_per_rss', $this->total_posts );
+
 			// Впариваем нужные нам типы постов
 			$wp_query->set( 'post_type', $this->post_type );
+
 			// Указываем поле для сортировки.
-			$wp_query->set( 'orderby', 'modified' );
+			$wp_query->set( 'orderby', $this->wposa_obj->get_option( 'orderby', 'feed', 'date' ) );
+
 			// Указываем направление сортировки.
-			$wp_query->set( 'order', 'DESC' );
+			$wp_query->set( 'order', $this->wposa_obj->get_option( 'order', 'feed', 'DESC' ) );
 		}
 	}
 

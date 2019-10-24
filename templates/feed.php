@@ -1,6 +1,9 @@
 <?php
-header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=UTF-8', true );
-echo '<?xml version="1.0" encoding="UTF-8"?' . '>';
+/**
+ * @var \Mihdan\MailRuPulseFeed\Main $this
+ */
+header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=' . $this->wposa_obj->get_option( 'charset', 'feed' ), true );
+echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset', 'feed' ) . '"?' . '>';
 ?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 	<channel>
