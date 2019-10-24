@@ -5,8 +5,11 @@
  * Date: 06.02.19
  * Time: 21:57
  */
+namespace Mihdan\MailRuPulseFeed;
 
-class Mihdan_Mailru_Pulse_Feed_Main {
+use WPTRT\AdminNotices\Notices;
+
+class Main {
 
 	private $slug;
 	private $feedname;
@@ -14,13 +17,32 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 		'p' => array(),
 	);
 
+	private $total_posts = 100;
+
+	/**
+	 * @var array список постов для вывода
+	 */
+	private $post_type = array( 'post', 'publication' );
+
+	/**
+	 * @var Settings
+	 */
+	private $settings;
+
+	/**
+	 * @var Notifications
+	 */
+	private $notifications;
+
 	public function __construct() {
 		$this->setup();
 		$this->hooks();
 	}
 
 	private function setup() {
-		$this->slug = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+		$this->slug          = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+		$this->settings      = new Settings();
+		$this->notifications = new Notifications();
 	}
 
 	private function hooks() {
@@ -30,9 +52,28 @@ class Mihdan_Mailru_Pulse_Feed_Main {
 		add_filter( 'wpseo_include_rss_footer', array( $this, 'hide_wpseo_rss_footer' ) );
 		add_filter( 'the_excerpt_rss', array( $this, 'the_excerpt_rss' ), 99 );
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
+		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Подправляем основной луп фида
+	 *
+	 * @param \WP_Query $wp_query объект запроса
+	 */
+	public function alter_query( \WP_Query $wp_query ) {
+		if ( $wp_query->is_main_query() && $wp_query->is_feed( $this->feedname ) ) {
+			// Ограничить посты 50-ю
+			$wp_query->set( 'posts_per_rss', $this->total_posts );
+			// Впариваем нужные нам типы постов
+			$wp_query->set( 'post_type', $this->post_type );
+			// Указываем поле для сортировки.
+			$wp_query->set( 'orderby', 'modified' );
+			// Указываем направление сортировки.
+			$wp_query->set( 'order', 'DESC' );
+		}
 	}
 
 	function the_excerpt_rss( $excerpt ) {

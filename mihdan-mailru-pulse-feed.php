@@ -20,6 +20,7 @@
  * @package mihdan-mailru-pulse-feed
  * @author  Mikhail Kobzarev
  */
+use Mihdan\MailRuPulseFeed\Main;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -39,7 +40,7 @@ static $plugin;
 
 if ( ! isset( $plugin ) ) {
 	require_once MIHDAN_MAILRU_PULSE_FEED_PATH . '/vendor/autoload.php';
-	$plugin = new Mihdan_Mailru_Pulse_Feed_Main();
+	$plugin = new Main();
 }
 
 // eof;

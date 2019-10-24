@@ -19,8 +19,17 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "repositories": [
+    {
+      "type":"composer",
+      "url":"https://wpackagist.org"
+    }
+  ],
   "require": {
-    "composer/installers": "*"
+    "composer/installers": "*",
+    "wptrt/admin-notices": "^1.0",
+    "wpackagist-plugin/advanced-custom-fields": "^5.8",
+    "stoutlogic/acf-builder": "^1.8"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",

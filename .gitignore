@@ -5,6 +5,7 @@ node_modules
 dist/**
 bin/
 tests/
+vendor/
 *.sql
 *.tar.gz
 *.zip
