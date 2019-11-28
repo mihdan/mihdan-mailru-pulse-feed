@@ -1,7 +1,7 @@
 === Mihdan: Mail.ru Pulse Feed ===
 Contributors: mihdan
 Tags: mailru, pulse, feed
-Requires at least: 2.3
+Requires at least: 4.6
 Tested up to: 5.3
 Stable tag: 0.1.1
 Requires PHP: 5.2.60
