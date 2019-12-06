@@ -147,10 +147,40 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'contacts',
 			array(
+				'id'   => 'help',
+				'type' => 'html',
+				'name' => __( 'Помощь', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Нужна помощь?<br />По всем вопросам пишите в телеграм <a href="https://t.me/mihdan" target="_blank">@mihdan</a>.', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'contacts',
+			array(
 				'id'   => 'donate',
 				'type' => 'html',
-				'name' => __( 'Нужна помощь?', 'mihdan-mailru-pulse-feed' ),
-				'desc' => 'По всем вопросам пишите в телеграм @mihdan',
+				'name' => __( 'Благодарность', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Хотите отблагодарить автора?<br />Сделать это можно на <a href="https://www.kobzarev.com/donate/" target="_blank">официальном сайте</a>.', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'contacts',
+			array(
+				'id'   => 'mark',
+				'type' => 'html',
+				'name' => __( 'Оценка', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Хотите оценить плагин ★★★★★?<br />Сделать это можно на <a href="https://wordpress.org/support/plugin/mihdan-mailru-pulse-feed/reviews/?rate=5#new-post" target="_blank">официальном странице</a> плагина.', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'contacts',
+			array(
+				'id'   => 'plugins',
+				'type' => 'html',
+				'name' => __( 'Плагины автора', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Понравился плагин?<br />Остальные полезные плагины автора вы можете посмотреть в <a href="https://profiles.wordpress.org/mihdan/#content-plugins" target="_blank">официальном репозитории</a> wp.org.', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 	}

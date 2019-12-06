@@ -42,6 +42,22 @@ class Main {
 	 */
 	private $wposa_obj;
 
+	/**
+	 * @var array $defaults Default settings.
+	 */
+	private $defaults = [
+		'charset'     => 'UTF-8',
+		'orderby'     => 'date',
+		'order'       => 'DESC',
+		'post_types'  => [
+			'post' => 'post',
+		],
+		'taxonomies'  => [
+			'category' => 'category',
+		],
+		'total_posts' => 1000,
+	];
+
 	public function __construct() {
 		$this->setup();
 		$this->hooks();
@@ -136,10 +152,20 @@ class Main {
 	public function send_headers_for_aio_seo_pack() {
 		// Добавим заголовок `X-Robots-Tag`
 		// для решения проблемы с сеошными плагинами.
-		header( 'X-Robots-Tag: index, follow', true );
+		if ( is_feed( $this->feedname ) ) {
+			header( 'X-Robots-Tag: index, follow', true );
+		}
 	}
 
 	public function on_activate() {
+
+		// Смотрим, есть ли настройки в базе данных,
+		// если нет - создадим дефолтные.
+		$settings = $this->wposa_obj->get_option( 'charset', 'feed' );
+
+		if ( ! $settings ) {
+			update_option( 'feed', $this->defaults );
+		}
 
 		// Добавим флаг, свидетельствующий о том,
 		// что нужно сбросить реврайты.
