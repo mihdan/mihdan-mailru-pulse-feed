@@ -1,4 +1,8 @@
 <?php
+/**
+ * @package mihdan-mailru-pulse-feed
+ * @link https://help.mail.ru/feed/rss
+ */
 namespace Mihdan\MailRuPulseFeed;
 
 class Settings {
@@ -134,6 +138,68 @@ class Settings {
 				'name'              => __( 'Total Posts', 'mihdan-mailru-pulse-feed' ),
 				'default'           => 1000,
 				'sanitize_callback' => 'intval',
+			)
+		);
+
+		$this->wposa_obj->add_section(
+			array(
+				'id'    => 'source',
+				'title' => __( 'Source', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'title',
+				'type'    => 'text',
+				'name'    => __( 'Title', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'name' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'link',
+				'type'    => 'text',
+				'name'    => __( 'Link', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'url' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'description',
+				'type'    => 'textarea',
+				'name'    => __( 'Description', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'description' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'language',
+				'type'    => 'select',
+				'name'    => __( 'Language', 'mihdan-mailru-pulse-feed' ),
+				'options' => array(
+					'ru' => __( 'Russian', 'mihdan-mailru-pulse-feed' ),
+					'en' => __( 'English', 'mihdan-mailru-pulse-feed' ),
+				),
+				'default' => 'ru',
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'image',
+				'type'    => 'image',
+				'name'    => __( 'Image', 'mihdan-mailru-pulse-feed' ),
+				'desc'    => __( 'Размер картинки должен быть не менее 200 пикселей по ширине и высоте.<br />Изображение будет кадрировано до квадратного.<br />Не допускается анимация и прозрачный фон.', 'mihdan-mailru-pulse-feed' ),
+				'default' => admin_url( 'images/w-logo-blue.png' ),
 			)
 		);
 

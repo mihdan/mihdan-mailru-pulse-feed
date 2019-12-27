@@ -81,9 +81,35 @@ class Main {
 		add_filter( 'the_excerpt_rss', array( $this, 'the_excerpt_rss' ), 99 );
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
+		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Add plugin action links
+	 *
+	 * @param array $actions
+	 * @param string $plugin_file
+	 *
+	 * @return array
+	 */
+	public function add_settings_link( $actions, $plugin_file ) {
+		if ( 'mihdan-mailru-pulse-feed/mihdan-mailru-pulse-feed.php' === $plugin_file ) {
+			$actions[] = sprintf(
+				'<a href="%s">%s</a>',
+				admin_url( 'options-general.php?page=mihdan_mailru_pulse_feed' ),
+				esc_html__( 'Settings', 'mihdan-mailru-pulse-feed' )
+			);
+			$actions[] = sprintf(
+				'<a href="%s" target="_blank">%s</a>',
+				esc_url( 'https://www.kobzarev.com/donate/' ),
+				esc_html__( 'Donate', 'mihdan-mailru-pulse-feed' )
+			);
+		}
+
+		return $actions;
 	}
 
 	/**
