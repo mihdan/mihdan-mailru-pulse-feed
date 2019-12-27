@@ -60,7 +60,7 @@ add_filter(
 
 = 0.1.4 (27.12.2019) =
 * Ability to exclude posts from feed
-* Ability to exclude categories and tags from feed
+* Ability to exclude categories from feed
 
 = 0.1.3 (27.12.2019) =
 * Added settings for feed source

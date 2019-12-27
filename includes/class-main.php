@@ -82,20 +82,78 @@ class Main {
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
-		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
-		add_action( 'save_post', array( $this, 'save_meta_box' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
+		add_action( 'save_post', array( $this, 'save_post_meta_box' ) );
+		add_action( 'category_edit_form', array( $this, 'add_category_meta_box' ) );
+		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			add_filter( 'posts_request', [ $this, 'dump_request' ] );
+		}
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
 	}
 
 	/**
-	 * Add settings metabox for posts.
+	 * Dump main sql query.
+	 *
+	 * @param $request
+	 *
+	 * @return mixed
 	 */
-	public function add_meta_box() {
+	public function dump_request( $request ) {
+		//print_r( $request );
+
+		return $request;
+	}
+
+	/**
+	 * Add settings Meta Box for categories.
+	 *
+	 * @param \WP_Term $term Current taxonomy term object
+	 */
+	public function add_category_meta_box( \WP_Term $term ) {
+		$exclude = (bool) get_term_meta( $term->term_id, $this->slug . '_exclude', true );
+		?>
+		<h2><?php _e( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr class="form-field">
+				<th scope="row">
+					<label for="<?php echo esc_attr( $this->slug ); ?>_exclude"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></label>
+				</th>
+				<td>
+					<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?> />
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Save settings Meta Box for categories.
+	 *
+	 * @param int $term_id Term ID .
+	 */
+	public function save_category_meta_box( $term_id ) {
+		if ( ! current_user_can( 'edit_term', $term_id ) ) {
+			return;
+		}
+
+		if ( isset( $_POST[ $this->slug . '_exclude' ] ) ) {
+			update_term_meta( $term_id, $this->slug . '_exclude', 1 );
+		} else {
+			delete_term_meta( $term_id, $this->slug . '_exclude' );
+		}
+	}
+
+	/**
+	 * Add settings Meta Box for posts.
+	 */
+	public function add_post_meta_box() {
 		add_meta_box(
 			$this->slug,
-			__( 'Pulse Main.ru', 'mihdan-mailru-pulse-feed' ),
+			__( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ),
 			[ $this, 'render_meta_box' ],
 			$this->post_type,
 			'side',
@@ -104,7 +162,7 @@ class Main {
 	}
 
 	/**
-	 * Render settings metabox for posts.
+	 * Render settings Meta Box for posts.
 	 */
 	public function render_meta_box() {
 		$exclude = (bool) get_post_meta( get_the_ID(), $this->slug . '_exclude', true );
@@ -115,11 +173,11 @@ class Main {
 		<?php
 	}
 	/**
-	 * Созраняем данные метабокса.
+	 * Save  settings Meta Box for posts.
 	 *
-	 * @param int $post_id идентификатор записи.
+	 * @param int $post_id Post ID .
 	 */
-	public function save_meta_box( $post_id ) {
+	public function save_post_meta_box( $post_id ) {
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
 			return;
 		}
@@ -185,8 +243,37 @@ class Main {
 				'key'     => $this->slug . '_exclude',
 				'compare' => 'NOT EXISTS',
 			);
+
 			// Исключаем записи с галочкой в админке
 			$wp_query->set( 'meta_query', $meta_query );
+
+			// Ищем категории, которые исключены из ленты.
+			$args = [
+				'taxonomy'   => 'category',
+				'fields'     => 'ids',
+				'meta_query' => [
+					[
+						'key'     => $this->slug . '_exclude',
+						'compare' => 'EXISTS',
+					],
+				],
+			];
+
+			$excluded_categories = get_terms( $args );
+
+			if ( $excluded_categories ) {
+
+				$tax_query = $wp_query->get( 'tax_query', array() );
+
+				$tax_query[] = array(
+					'taxonomy' => 'category',
+					'field'    => 'term_id',
+					'terms'    => $excluded_categories,
+					'operator' => 'NOT IN',
+				);
+
+				$wp_query->set( 'tax_query', $tax_query );
+			}
 		}
 	}
 
