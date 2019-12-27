@@ -82,9 +82,55 @@ class Main {
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
+		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+		add_action( 'save_post', array( $this, 'save_meta_box' ) );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Add settings metabox for posts.
+	 */
+	public function add_meta_box() {
+		add_meta_box(
+			$this->slug,
+			__( 'Pulse Main.ru', 'mihdan-mailru-pulse-feed' ),
+			[ $this, 'render_meta_box' ],
+			$this->post_type,
+			'side',
+			'high'
+		);
+	}
+
+	/**
+	 * Render settings metabox for posts.
+	 */
+	public function render_meta_box() {
+		$exclude = (bool) get_post_meta( get_the_ID(), $this->slug . '_exclude', true );
+		?>
+		<label for="<?php echo esc_attr( $this->slug ); ?>_exclude" title="Включить/Исключить запись из ленты">
+			<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?>
+		</label>
+		<?php
+	}
+	/**
+	 * Созраняем данные метабокса.
+	 *
+	 * @param int $post_id идентификатор записи.
+	 */
+	public function save_meta_box( $post_id ) {
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		if ( isset( $_POST[ $this->slug . '_exclude' ] ) ) {
+			update_post_meta( $post_id, $this->slug . '_exclude', 1 );
+		} else {
+			delete_post_meta( $post_id, $this->slug . '_exclude' );
+		}
 	}
 
 	/**
@@ -130,6 +176,17 @@ class Main {
 
 			// Указываем направление сортировки.
 			$wp_query->set( 'order', $this->wposa_obj->get_option( 'order', 'feed', 'DESC' ) );
+
+			// Получаем текущие мета запросы.
+			$meta_query = $wp_query->get( 'meta_query', array() );
+
+			// Добавляем исключения.
+			$meta_query[] = array(
+				'key'     => $this->slug . '_exclude',
+				'compare' => 'NOT EXISTS',
+			);
+			// Исключаем записи с галочкой в админке
+			$wp_query->set( 'meta_query', $meta_query );
 		}
 	}
 
