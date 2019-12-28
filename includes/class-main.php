@@ -163,9 +163,11 @@ class Main {
 
 	/**
 	 * Render settings Meta Box for posts.
+	 *
+	 * @param \WP_Post $post Post object.
 	 */
-	public function render_meta_box() {
-		$exclude = (bool) get_post_meta( get_the_ID(), $this->slug . '_exclude', true );
+	public function render_meta_box( $post ) {
+		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
 		?>
 		<label for="<?php echo esc_attr( $this->slug ); ?>_exclude" title="Включить/Исключить запись из ленты">
 			<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?>
