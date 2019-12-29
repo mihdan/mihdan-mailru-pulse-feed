@@ -24,10 +24,7 @@ class Settings {
 	public function __construct( $wposa_obj ) {
 
 		$this->wposa_obj = $wposa_obj;
-
-		$this->setup();
 		$this->hooks();
-		$this->fields();
 	}
 
 	public function setup() {
@@ -46,9 +43,15 @@ class Settings {
 		$this->taxonomies = wp_list_pluck( get_taxonomies( $args, 'objects' ), 'label', 'name' );
 	}
 
-	public function hooks() {}
+	/**
+	 * Hooks init.
+	 */
+	public function hooks() {
+		add_action( 'init', [ $this, 'setup' ] );
+		add_action( 'init', [ $this, 'fields' ] );
+	}
 
-	private function fields() {
+	public function fields() {
 		$this->wposa_obj->add_section(
 			array(
 				'id'    => 'feed',
