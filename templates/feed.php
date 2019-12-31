@@ -12,7 +12,9 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 		<description><?php echo esc_html( $this->wposa_obj->get_option( 'description', 'source' ) ); ?></description>
 		<language><?php echo esc_html( $this->wposa_obj->get_option( 'language', 'source' ) ); ?></language>
 		<generator>mihdan-mailru-pulse-feed</generator>
-		<image><?php echo esc_url( $this->wposa_obj->get_option( 'image', 'source' ) ); ?></image>
+		<image>
+			<url><?php echo esc_url( $this->wposa_obj->get_option( 'image', 'source' ) ); ?></url>
+		</image>
 		<?php do_action( 'rss2_head' ); ?>
 		<?php do_action( 'mihdan_mailru_pulse_feed_head' ); ?>
 		<?php while ( have_posts() ) : ?>
