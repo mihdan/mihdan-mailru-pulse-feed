@@ -47,8 +47,8 @@ class Settings {
 	 * Hooks init.
 	 */
 	public function hooks() {
-		add_action( 'init', [ $this, 'setup' ] );
-		add_action( 'init', [ $this, 'fields' ] );
+		add_action( 'init', [ $this, 'setup' ], 100 );
+		add_action( 'init', [ $this, 'fields' ], 111 );
 	}
 
 	public function fields() {
