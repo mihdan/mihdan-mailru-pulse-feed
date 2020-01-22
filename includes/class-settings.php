@@ -21,6 +21,11 @@ class Settings {
 	 */
 	private $taxonomies;
 
+	/**
+	 * Settings constructor.
+	 *
+	 * @param WP_OSA $wposa_obj
+	 */
 	public function __construct( $wposa_obj ) {
 
 		$this->wposa_obj = $wposa_obj;
@@ -144,10 +149,34 @@ class Settings {
 			)
 		);
 
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'   => 'fulltext',
+				'type' => 'checkbox',
+				'name' => __( 'Fulltext', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Enable Fulltext Support', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
 		$this->wposa_obj->add_section(
 			array(
 				'id'    => 'source',
 				'title' => __( 'Source', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'   => 'slug',
+				'type' => 'html',
+				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
+				'desc' => sprintf(
+					/* translators: URL to feed */
+					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>.', 'mihdan-mailru-pulse-feed' ),
+					get_home_url() . '/feed/mihdan-mailru-pulse-feed/'
+				),
 			)
 		);
 
@@ -203,6 +232,44 @@ class Settings {
 				'name'    => __( 'Image', 'mihdan-mailru-pulse-feed' ),
 				'desc'    => __( 'Размер картинки должен быть не менее 200 пикселей по ширине и высоте.<br />Изображение будет кадрировано до квадратного.<br />Не допускается анимация и прозрачный фон.', 'mihdan-mailru-pulse-feed' ),
 				'default' => admin_url( 'images/w-logo-blue.png' ),
+			)
+		);
+
+		$this->wposa_obj->add_section(
+			array(
+				'id'    => 'widget',
+				'title' => __( 'Widget', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'widget',
+			array(
+				'id'   => 'shortcode',
+				'type' => 'html',
+				'name' => __( 'Shortcode', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Widget also available by shortcode <code>[mihdan-mailru-pulse-widget]</code>', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'widget',
+			array(
+				'id'          => 'id',
+				'type'        => 'text',
+				'name'        => __( 'Widget ID', 'mihdan-mailru-pulse-feed' ),
+				'placeholder' => 'partners_widget_domain',
+				'desc'        => __( 'Идентификатор можно посмотреть в разделе "Личный кабинет партнёра &rarr; <a href="https://pulse.mail.ru/cabinet/widgets" target="_blank">Виджеты</a>"', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'widget',
+			array(
+				'id'   => 'auto_append',
+				'type' => 'checkbox',
+				'name' => __( 'Auto Append', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Автоматически добавлять виджет в конец записей', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 

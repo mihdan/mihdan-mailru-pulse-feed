@@ -43,19 +43,30 @@ class Main {
 	private $wposa_obj;
 
 	/**
+	 * @var Widget
+	 */
+	private $widget;
+
+	/**
 	 * @var array $defaults Default settings.
 	 */
 	private $defaults = [
-		'charset'     => 'UTF-8',
-		'orderby'     => 'date',
-		'order'       => 'DESC',
-		'post_types'  => [
-			'post' => 'post',
+		'feed'   => [
+			'charset'     => 'UTF-8',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+			'post_types'  => [
+				'post' => 'post',
+			],
+			'taxonomies'  => [
+				'category' => 'category',
+			],
+			'total_posts' => 1000,
+			'fulltext'    => 'off',
 		],
-		'taxonomies'  => [
-			'category' => 'category',
+		'widget' => [
+			'auto_append' => 'off',
 		],
-		'total_posts' => 1000,
 	];
 
 	public function __construct() {
@@ -68,6 +79,7 @@ class Main {
 		$this->wposa_obj     = new WP_OSA();
 		$this->settings      = new Settings( $this->wposa_obj );
 		$this->notifications = new Notifications();
+		$this->widget        = new Widget( $this->wposa_obj );
 
 		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
 		$this->total_posts = $this->wposa_obj->get_option( 'total_posts', 'feed', 10 );
@@ -336,7 +348,9 @@ class Main {
 		$settings = $this->wposa_obj->get_option( 'charset', 'feed' );
 
 		if ( ! $settings ) {
-			update_option( 'feed', $this->defaults );
+			foreach ( $this->defaults as $section => $defaults ) {
+				update_option( $section, $defaults );
+			}
 		}
 
 		// Добавим флаг, свидетельствующий о том,
