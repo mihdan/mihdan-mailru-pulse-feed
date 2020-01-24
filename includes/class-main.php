@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: mihdan
- * Date: 06.02.19
- * Time: 21:57
+ * @package mihdan-mailru-pulse-feed
  */
 namespace Mihdan\MailRuPulseFeed;
 
@@ -74,6 +71,16 @@ class Main {
 		],
 	];
 
+	/**
+	 * @var array $amp_data array of AMP plugins.
+	 */
+	private $amp_data = [
+		'amp_init'      => 'amp_get_permalink',
+		'ampforwp_init' => '\AMPforWP\AMPVendor\amp_get_permalink',
+	];
+
+	private $amp_provider = '';
+
 	public function __construct() {
 		$this->setup();
 		$this->hooks();
@@ -110,6 +117,42 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Check if AMP is supported.
+	 *
+	 * @return bool
+	 */
+	public function is_amp_support() {
+		foreach ( $this->amp_data as $function => $data ) {
+			if ( function_exists( $function ) ) {
+				$this->amp_provider = $function;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get AMP permalink for post.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return string
+	 */
+	public function get_amp_permalink( $post_id ) {
+		return $this->amp_data[ $this->amp_provider ]( $post_id );
+	}
+
+	/**
+	 * Display AMP permalink for post.
+	 *
+	 * @param int $post_id
+	 */
+	public function the_amp_permalink( $post_id ) {
+		echo $this->get_amp_permalink( $post_id );
 	}
 
 	/**
@@ -299,7 +342,6 @@ class Main {
 	function the_excerpt_rss( $excerpt ) {
 		if ( is_feed( $this->feedname ) ) {
 			$excerpt = wp_kses( $excerpt, $this->allowable_tags );
-			//preg_replace('/<!--(.|\s)*?-->/', '', $content);
 		}
 
 		return $excerpt;
