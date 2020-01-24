@@ -1,9 +1,9 @@
 === Mihdan: Mail.ru Pulse Feed ===
 Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
-Requires at least: 4.6
+Requires at least: 5.0
 Tested up to: 5.3
-Stable tag: 0.2
+Stable tag: 0.2.1
 Requires PHP: 5.6.20
 
 WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
@@ -80,6 +80,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.2.1 (25.01.2020) =
+* Added more allowable tags for excerpt
+* Added support for AMP links
 
 = 0.2 (22.01.2020) =
 * Added Pulse widget for pages & posts
