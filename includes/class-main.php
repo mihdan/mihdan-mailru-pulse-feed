@@ -14,7 +14,12 @@ class Main {
 	private $slug;
 	private $feedname;
 	private $allowable_tags = array(
-		'p' => array(),
+		'p'      => array(),
+		'em'     => array(),
+		'i'      => array(),
+		'b'      => array(),
+		'strong' => array(),
+		'img'    => array(),
 	);
 
 	/**
@@ -294,6 +299,7 @@ class Main {
 	function the_excerpt_rss( $excerpt ) {
 		if ( is_feed( $this->feedname ) ) {
 			$excerpt = wp_kses( $excerpt, $this->allowable_tags );
+			//preg_replace('/<!--(.|\s)*?-->/', '', $content);
 		}
 
 		return $excerpt;
