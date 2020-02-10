@@ -11,5 +11,6 @@ delete_option( 'feed' );
 delete_option( 'source' );
 delete_option( 'widget' );
 delete_option( 'contacts' );
+delete_option( 'mihdan_mailru_pulse_feed_version' );
 // eol.
 
