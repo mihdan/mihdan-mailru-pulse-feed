@@ -9,7 +9,19 @@ class Notifications {
 	 * @var Notices
 	 */
 	private $notices;
-	public function __construct() {
+
+	/**
+	 * @var string $slug Plugni slug.
+	 */
+	private $slug;
+
+	/**
+	 * Notifications constructor.
+	 *
+	 * @param string $slug
+	 */
+	public function __construct( $slug = '' ) {
+		$this->slug    = $slug;
 		$this->notices = new Notices();
 
 		$template  = '<p>';
@@ -20,9 +32,13 @@ class Notifications {
 		$template .= '</p>';
 
 		$this->notices->add(
-			MIHDAN_MAILRU_PULSE_FEED_SLUG,
+			'review_dismissed',
 			false,
-			$template
+			$template,
+			[
+				'scope'         => 'user',
+				'option_prefix' => $this->slug,
+			]
 		);
 
 		$this->notices->boot();
