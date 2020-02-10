@@ -8,7 +8,6 @@ use WPTRT\AdminNotices\Notices;
 
 class Main {
 
-	private $slug;
 	private $feedname;
 	private $allowable_tags = array(
 		'p'      => array(),
@@ -81,16 +80,27 @@ class Main {
 
 	private $amp_provider = '';
 
+	/**
+	 * @var string $version Plugin version.
+	 */
+	private $version;
+
+	/**
+	 * @var string $slug Plugin slug.
+	 */
+	private $slug;
+
 	public function __construct() {
 		$this->setup();
 		$this->hooks();
 	}
 
 	private function setup() {
+		$this->version       = MIHDAN_MAILRU_PULSE_FEED_VERSION;
 		$this->slug          = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
 		$this->wposa_obj     = new WP_OSA();
 		$this->settings      = new Settings( $this->wposa_obj );
-		$this->notifications = new Notifications();
+		$this->notifications = new Notifications( $this->slug );
 		$this->widget        = new Widget( $this->wposa_obj );
 
 		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
@@ -110,6 +120,7 @@ class Main {
 		add_action( 'save_post', array( $this, 'save_post_meta_box' ) );
 		add_action( 'category_edit_form', array( $this, 'add_category_meta_box' ) );
 		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
+		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			add_filter( 'posts_request', [ $this, 'dump_request' ] );
@@ -117,6 +128,24 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Set plugin version.
+	 *
+	 * @param \WP_Upgrader $upgrader WP_Upgrader instance.
+	 * @param array        $options  Array of bulk item update data.
+	 */
+	public function upgrade( \WP_Upgrader $upgrader, $options ) {
+		$our_plugin = plugin_basename( MIHDAN_MAILRU_PULSE_FEED_FILE );
+
+		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
+			foreach ( $options['plugins'] as $plugin ) {
+				if ( $plugin === $our_plugin ) {
+					update_option( $this->slug . '_version', $this->version, false );
+				}
+			}
+		}
 	}
 
 	/**
@@ -397,13 +426,16 @@ class Main {
 
 		if ( ! $settings ) {
 			foreach ( $this->defaults as $section => $defaults ) {
-				update_option( $section, $defaults );
+				update_option( $section, $defaults, false );
 			}
 		}
 
 		// Добавим флаг, свидетельствующий о том,
 		// что нужно сбросить реврайты.
 		update_option( $this->slug . '_flush_rewrite_rules', 1, true );
+
+		// Set plugin version.
+		update_option( $this->slug . '_version', $this->version, false );
 	}
 
 	public function on_deactivate() {
