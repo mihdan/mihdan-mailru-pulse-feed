@@ -1,7 +1,10 @@
 <?php
 /**
  * @package mihdan-mailru-pulse-feed
+ *
+ * @link https://help.mail.ru/feed/fulltext
  */
+
 namespace Mihdan\MailRuPulseFeed;
 
 use WPTRT\AdminNotices\Notices;
@@ -10,12 +13,16 @@ class Main {
 
 	private $feedname;
 	private $allowable_tags = array(
-		'p'      => array(),
-		'em'     => array(),
-		'i'      => array(),
-		'b'      => array(),
-		'strong' => array(),
-		'img'    => array(),
+		'p'          => array(),
+		'em'         => array(),
+		'i'          => array(),
+		'b'          => array(),
+		'strong'     => array(),
+		'img'        => array(),
+		'video'      => array(),
+		'figure'     => array(),
+		'figcaption' => array(),
+		'iframe'     => array(),
 	);
 
 	/**
@@ -121,6 +128,7 @@ class Main {
 		add_action( 'category_edit_form', array( $this, 'add_category_meta_box' ) );
 		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
+		add_filter( 'image_send_to_editor', array( $this, 'wrap_image' ), 10, 8 );
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			add_filter( 'posts_request', [ $this, 'dump_request' ] );
@@ -128,6 +136,53 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Retrieves the image HTML to send to the editor.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string       $html    HTML for image.
+	 * @param int          $id      Image attachment id.
+	 * @param string       $caption Image caption.
+	 * @param string       $title   Image title attribute.
+	 * @param string       $align   Image CSS alignment property.
+	 * @param string       $url     Optional. Image src URL. Default empty.
+	 * @param bool|string  $rel     Optional. Value for rel attribute or whether to add a default value. Default false.
+	 * @param string|array $size    Optional. Image size. Accepts any valid image size, or an array of width
+	 *                              and height values in pixels (in that order). Default 'medium'.
+	 * @param string       $alt     Optional. Image alt attribute. Default empty.
+	 * @return string The HTML output to insert into the editor.
+	 */
+	public function wrap_image( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
+
+		// If theme not support html5.
+		if ( current_theme_supports( 'html5' ) ) {
+			$src = wp_get_attachment_image_src( $id, $size );
+
+			$html = '';
+
+			$html .= "<figure id='post-{$id} media-{$id}' class='align-{$align}'>";
+
+			if ( $url ) {
+				$html .= '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $title ) . '">';
+			}
+
+			$html .= "<img src='{$src[0]}' alt='{$alt}' />";
+
+			if ( $url ) {
+				$html .= "</a>";
+			}
+
+			if ( $caption ) {
+				$html .= "<figcaption>{$caption}</figcaption>";
+			}
+
+			$html .= "</figure>";
+		}
+
+		return $html;
 	}
 
 	/**
@@ -378,6 +433,10 @@ class Main {
 
 	public function after_setup_theme() {
 		$this->feedname = apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+
+		if ( 'on' === $this->wposa_obj->get_option( 'html5', 'feed' ) ) {
+			add_theme_support( 'html5', array( 'gallery', 'caption'  ) );
+		}
 	}
 
 	public function add_feed() {
