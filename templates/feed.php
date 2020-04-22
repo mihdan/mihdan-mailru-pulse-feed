@@ -27,7 +27,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 				<title><?php the_title_rss(); ?></title>
 				<author><?php the_author(); ?></author>
 				<pubDate><?php echo esc_html( get_post_time( 'r', true ) ); ?></pubDate>
-				<description><![CDATA[<?php the_excerpt_rss(); ?>]]></description>
+				<description><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', get_the_excerpt(), get_the_ID() ); ?>]]></description>
 				<?php if ( has_post_thumbnail() ) : ?>
 					<?php
 					$thumbnail = get_the_post_thumbnail_url( get_the_ID(), 'large' );
@@ -36,7 +36,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 					<enclosure url="<?php echo esc_url( $thumbnail ); ?>" type="<?php echo esc_attr( $type['type'] ); ?>"/>
 				<?php endif; ?>
 				<?php if ( 'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) ) : ?>
-					<content:encoded><![CDATA[<?php the_content_feed(); ?>]]></content:encoded>
+					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', get_the_content_feed(), get_the_ID() ); ?>]]></content:encoded>
 				<?php endif; ?>
 				<?php do_action( 'mihdan_mailru_pulse_feed_item', get_the_ID() ); ?>
 			</item>
