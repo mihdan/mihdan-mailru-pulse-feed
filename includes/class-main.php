@@ -8,6 +8,7 @@
 namespace Mihdan\MailRuPulseFeed;
 
 use WPTRT\AdminNotices\Notices;
+use DOMDocument;
 
 class Main {
 
@@ -97,9 +98,39 @@ class Main {
 	 */
 	private $slug;
 
+	/**
+	 * Main constructor.
+	 */
 	public function __construct() {
+		if ( ! $this->requirements() ) {
+			return;
+		}
+
 		$this->setup();
 		$this->hooks();
+	}
+
+	/**
+	 * Check plugin requirements.
+	 *
+	 * @return bool
+	 */
+	public function requirements() {
+		/**
+		 * TODO: Перенести в SiteHealth.
+		 */
+		if ( ! class_exists( 'DOMDocument' ) ) {
+			add_action(
+				'admin_notices',
+				function () {
+					printf( '<div class="notice notice-error"><p>%s</p></div>', __( 'Для правильной работы плагина <b>Mail.ru Pulse Feed</b> необходимо расширение <b>DOMDocument</b>. Обратитесь в техподдержку вашего хостинга или к вашему системному администратору.', 'mihdan-mailru-pulse-feed' ) );
+				}
+			);
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private function setup() {
@@ -130,12 +161,43 @@ class Main {
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 		add_filter( 'image_send_to_editor', array( $this, 'wrap_image' ), 10, 8 );
 
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			add_filter( 'posts_request', [ $this, 'dump_request' ] );
-		}
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ) );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Wrap all image in content with <figure> tag.
+	 *
+	 * @param  string $content
+	 * @return string
+	 * @link   https://wp-punk.com/domdocument/
+	 */
+	public function wrap_image_with_figure( $content ) {
+		$dom = new DOMDocument( '1.0', 'UTF-8' );
+
+		libxml_use_internal_errors( true );
+		$dom->loadHTML( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		libxml_clear_errors();
+
+		$figure = $dom->createElement( 'figure' );
+		$images = $dom->getElementsByTagName('img');
+
+		foreach ( $images as $image ) {
+			$parent = $image->parentNode;
+
+			if ( 'figure' === $parent->tagName ) {
+				continue;
+			}
+
+			$figure_cloned = $figure->cloneNode();
+
+			$parent->replaceChild( $figure_cloned,$image );
+			$figure_cloned->appendChild( $image );
+		}
+
+		return $dom->saveHTML( $dom->documentElement );
 	}
 
 	/**
@@ -157,8 +219,7 @@ class Main {
 	 */
 	public function wrap_image( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
 
-		// If theme not support html5.
-		if ( current_theme_supports( 'html5' ) ) {
+		if ( 'on' === $this->wposa_obj->get_option( 'html5', 'feed' ) ) {
 			$src = wp_get_attachment_image_src( $id, $size );
 
 			$html = '';
@@ -237,19 +298,6 @@ class Main {
 	 */
 	public function the_amp_permalink( $post_id ) {
 		echo $this->get_amp_permalink( $post_id );
-	}
-
-	/**
-	 * Dump main sql query.
-	 *
-	 * @param $request
-	 *
-	 * @return mixed
-	 */
-	public function dump_request( $request ) {
-		//print_r( $request );
-
-		return $request;
 	}
 
 	/**
@@ -433,10 +481,6 @@ class Main {
 
 	public function after_setup_theme() {
 		$this->feedname = apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
-
-		if ( 'on' === $this->wposa_obj->get_option( 'html5', 'feed' ) ) {
-			add_theme_support( 'html5', array( 'gallery', 'caption'  ) );
-		}
 	}
 
 	public function add_feed() {
@@ -460,10 +504,21 @@ class Main {
 		}
 	}
 
-	public function hide_wpseo_rss_footer( $include_footer = true ) {
+	/**
+	 * Show/Hide Yoast SEO Footer.
+	 *
+	 * @param bool $include_footer
+	 *
+	 * @return bool
+	 */
+	public function hide_wpseo_rss_footer( $include_footer ) {
 
 		if ( is_feed( $this->feedname ) ) {
-			$include_footer = false;
+			if ( 'on' === $this->wposa_obj->get_option( 'yoast_seo_footer', 'feed' ) ) {
+				$include_footer = true;
+			} else {
+				$include_footer = false;
+			}
 		}
 
 		return $include_footer;
