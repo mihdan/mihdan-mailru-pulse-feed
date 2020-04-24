@@ -165,7 +165,7 @@ class Settings {
 				'id'   => 'html5',
 				'type' => 'checkbox',
 				'name' => __( 'HTML5', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Enable HTML5 Support For Theme', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Enable HTML5 Support For Image', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 
