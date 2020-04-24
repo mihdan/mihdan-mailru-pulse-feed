@@ -9,21 +9,69 @@ namespace Mihdan\MailRuPulseFeed;
 
 use WPTRT\AdminNotices\Notices;
 use DOMDocument;
+use DOMNode;
 
 class Main {
 
 	private $feedname;
 	private $allowable_tags = array(
+		'a'          => array(
+			'href'   => true,
+			'target' => true,
+			'title'  => true,
+		),
+		'abbr'       => array(
+			'title' => true,
+		),
+		'acronym'    => array(
+			'title' => true,
+		),
+		'q'          => array(
+			'cite' => true,
+		),
+		'blockquote' => array(
+			'cite' => true,
+		),
 		'p'          => array(),
 		'em'         => array(),
 		'i'          => array(),
 		'b'          => array(),
 		'strong'     => array(),
-		'img'        => array(),
-		'video'      => array(),
+		's'          => array(),
+		'strike'     => array(),
+		'img'        => array(
+			'src'    => true,
+			'width'  => true,
+			'height' => true,
+			'alt'    => true,
+			'title'  => true,
+		),
+		'video'      => array(
+			'src'      => true,
+			'autoplay' => true,
+			'controls' => true,
+			'height'   => true,
+			'width'    => true,
+			'loop'     => true,
+			'poster'   => true,
+			'preload'  => true,
+		),
+		'source'     => array(
+			'src'   => true,
+			'type'  => true,
+			'media' => true,
+		),
 		'figure'     => array(),
 		'figcaption' => array(),
-		'iframe'     => array(),
+		'iframe'     => array(
+			'src'    => true,
+			'width'  => true,
+			'height' => true,
+		),
+		'cite'       => array(),
+		'code'       => array(),
+		'pre'        => array(),
+		'del'        => array(),
 	);
 
 	/**
@@ -150,7 +198,6 @@ class Main {
 		add_action( 'init', array( $this, 'flush_rewrite_rules' ), 99 );
 		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
 		add_filter( 'wpseo_include_rss_footer', array( $this, 'hide_wpseo_rss_footer' ) );
-		add_filter( 'the_excerpt_rss', array( $this, 'the_excerpt_rss' ), 99 );
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
@@ -161,7 +208,10 @@ class Main {
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 		add_filter( 'image_send_to_editor', array( $this, 'wrap_image' ), 10, 8 );
 
-		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ) );
+		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
+
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100 );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
@@ -176,9 +226,11 @@ class Main {
 	 */
 	public function wrap_image_with_figure( $content ) {
 		$dom = new DOMDocument( '1.0', 'UTF-8' );
+		$dom->preserveWhiteSpace = false;
+		$dom->formatOutput       = true;
 
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		$dom->loadHTML( '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>' . $content . '</body></html>' );
 		libxml_clear_errors();
 
 		$figure = $dom->createElement( 'figure' );
@@ -197,7 +249,31 @@ class Main {
 			$figure_cloned->appendChild( $image );
 		}
 
-		return $dom->saveHTML( $dom->documentElement );
+		$dom->encoding = 'UTF-8';
+
+		return force_balance_tags(
+			$this->dom_inner_html(
+				$dom->getElementsByTagName( 'body' )->item( 0)
+			)
+		);
+	}
+
+	/**
+	 * Get innerHTML of DOMNode.
+	 *
+	 * @param DOMNode $element Node.
+	 *
+	 * @return string
+	 */
+	private function dom_inner_html( DOMNode $element ) {
+		$html      = '';
+		$children  = $element->childNodes;
+
+		foreach ( $children as $child ) {
+			$html .= $element->ownerDocument->saveHTML( $child );
+		}
+
+		return $html;
 	}
 
 	/**
@@ -477,6 +553,21 @@ class Main {
 		}
 
 		return $excerpt;
+	}
+
+	/**
+	 * Filters text content and strips out disallowed HTML.
+	 *
+	 * @param string $content Content with HTML.
+	 *
+	 * @return string
+	 */
+	function kses_content( $content ) {
+		if ( is_feed( $this->feedname ) ) {
+			$content = wp_kses( $content, $this->allowable_tags );
+		}
+
+		return $content;
 	}
 
 	public function after_setup_theme() {
