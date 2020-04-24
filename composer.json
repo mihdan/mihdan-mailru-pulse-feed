@@ -27,7 +27,8 @@
   ],
   "require": {
     "composer/installers": "*",
-    "wptrt/admin-notices": "^1.0"
+    "wptrt/admin-notices": "^1.0",
+    "ext-dom": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
