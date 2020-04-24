@@ -169,6 +169,16 @@ class Settings {
 			)
 		);
 
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'   => 'yoast_seo_footer',
+				'type' => 'checkbox',
+				'name' => __( 'Yoast SEO Footer', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Enable Yoast SEO Footer', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
 		$this->wposa_obj->add_section(
 			array(
 				'id'    => 'source',
