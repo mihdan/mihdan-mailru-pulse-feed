@@ -82,6 +82,9 @@ class Main {
 		'tr'         => array(),
 		'th'         => array(),
 		'td'         => array(),
+		'ul'         => array(),
+		'ol'         => array(),
+		'li'         => array(),
 	);
 
 	/**
