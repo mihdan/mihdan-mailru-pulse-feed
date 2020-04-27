@@ -7,7 +7,6 @@
 
 namespace Mihdan\MailRuPulseFeed;
 
-use WPTRT\AdminNotices\Notices;
 use DOMDocument;
 use DOMNode;
 
@@ -72,6 +71,17 @@ class Main {
 		'code'       => array(),
 		'pre'        => array(),
 		'del'        => array(),
+		'h1'         => array(),
+		'h2'         => array(),
+		'h3'         => array(),
+		'h4'         => array(),
+		'h5'         => array(),
+		'h6'         => array(),
+		'table'      => array(),
+		'tbody'      => array(),
+		'tr'         => array(),
+		'th'         => array(),
+		'td'         => array(),
 	);
 
 	/**
