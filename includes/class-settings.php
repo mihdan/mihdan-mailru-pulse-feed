@@ -162,16 +162,6 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'html5',
-				'type' => 'checkbox',
-				'name' => __( 'HTML5', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Enable HTML5 Support For Image', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'feed',
-			array(
 				'id'   => 'yoast_seo_footer',
 				'type' => 'checkbox',
 				'name' => __( 'Yoast SEO Footer', 'mihdan-mailru-pulse-feed' ),
