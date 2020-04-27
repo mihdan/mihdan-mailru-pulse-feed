@@ -85,6 +85,11 @@ class Main {
 	);
 
 	/**
+	 * @var array $enclosures Enclosures list.
+	 */
+	private $enclosures = array();
+
+	/**
 	 * @var int
 	 */
 	private $total_posts;
@@ -216,25 +221,106 @@ class Main {
 		add_action( 'category_edit_form', array( $this, 'add_category_meta_box' ) );
 		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
-		add_filter( 'image_send_to_editor', array( $this, 'wrap_image' ), 10, 8 );
 
 		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
 
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
-		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
+
+		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_thumbnail_to_enclosure' ) );
+		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
 	}
 
 	/**
+	 * Add enclosures to item.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function add_enclosures_to_item( $post_id ) {
+		foreach ( $this->get_enclosures( $post_id ) as $enclosure ) {
+			echo $this->create_enclosure( $enclosure['url'], $enclosure['type'] );
+		}
+	}
+
+	/**
+	 * Add post thumbnail to enclosures list.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function add_thumbnail_to_enclosure( $post_id ) {
+		if ( has_post_thumbnail( $post_id ) ) {
+			$url  = get_the_post_thumbnail_url( $post_id, 'large' );
+			$type = $this->get_mime_type_from_url( $url );
+
+			$this->set_enclosure( $post_id, $url, $type );
+		}
+	}
+
+	/**
+	 * Add enclosure to array.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $url Absolute URL.
+	 * @param string $type Mime type.
+	 */
+	private function set_enclosure( $post_id, $url, $type ) {
+		$hash = md5( $url );
+		$this->enclosures[ $post_id ][ $hash ] = array(
+			'url'  => $url,
+			'type' => $type,
+		);
+	}
+
+	/**
+	 * Get enclosures list for given post id.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return array
+	 */
+	private function get_enclosures( $post_id ) {
+		if ( isset( $this->enclosures[ $post_id ] ) && is_array( $this->enclosures[ $post_id ] ) ) {
+			return $this->enclosures[ $post_id ];
+		}
+
+		return array();
+	}
+
+	/**
+	 * Create enclosure tag.
+	 *
+	 * @param string $url URL.
+	 * @param string $type Mime type.
+	 *
+	 * @return string
+	 */
+	private function create_enclosure( $url, $type ) {
+		return sprintf( '<enclosure url="%s" type="%s"/>', $url, $type );
+	}
+
+	/**
+	 * Get image mime-type from given URL.
+	 *
+	 * @param string $url Absolute URL.
+	 *
+	 * @return mixed
+	 */
+	private function get_mime_type_from_url( $url ) {
+		return wp_check_filetype( $url )['type'];
+	}
+
+	/**
 	 * Wrap all image in content with <figure> tag.
 	 *
 	 * @param  string $content
+	 * @param  int    $post_id Post ID.
 	 * @return string
 	 * @link   https://wp-punk.com/domdocument/
 	 */
-	public function wrap_image_with_figure( $content ) {
+	public function wrap_image_with_figure( $content, $post_id ) {
 		$dom = new DOMDocument( '1.0', 'UTF-8' );
 		$dom->preserveWhiteSpace = false;
 		$dom->formatOutput       = true;
@@ -246,7 +332,19 @@ class Main {
 		$figure = $dom->createElement( 'figure' );
 		$images = $dom->getElementsByTagName('img');
 
+		/** @var \DOMElement $image */
 		foreach ( $images as $image ) {
+
+			// Get image URL.
+			$src = $image->getAttribute( 'src' );
+
+			if ( ! $src ) {
+				continue;
+			}
+
+			// Set image url & type to array.
+			$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
+
 			$parent = $image->parentNode;
 
 			if ( 'figure' === $parent->tagName ) {
@@ -281,52 +379,6 @@ class Main {
 
 		foreach ( $children as $child ) {
 			$html .= $element->ownerDocument->saveHTML( $child );
-		}
-
-		return $html;
-	}
-
-	/**
-	 * Retrieves the image HTML to send to the editor.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param string       $html    HTML for image.
-	 * @param int          $id      Image attachment id.
-	 * @param string       $caption Image caption.
-	 * @param string       $title   Image title attribute.
-	 * @param string       $align   Image CSS alignment property.
-	 * @param string       $url     Optional. Image src URL. Default empty.
-	 * @param bool|string  $rel     Optional. Value for rel attribute or whether to add a default value. Default false.
-	 * @param string|array $size    Optional. Image size. Accepts any valid image size, or an array of width
-	 *                              and height values in pixels (in that order). Default 'medium'.
-	 * @param string       $alt     Optional. Image alt attribute. Default empty.
-	 * @return string The HTML output to insert into the editor.
-	 */
-	public function wrap_image( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
-
-		if ( 'on' === $this->wposa_obj->get_option( 'html5', 'feed' ) ) {
-			$src = wp_get_attachment_image_src( $id, $size );
-
-			$html = '';
-
-			$html .= "<figure id='post-{$id} media-{$id}' class='align-{$align}'>";
-
-			if ( $url ) {
-				$html .= '<a href="' . esc_url( $url ) . '" title="' . esc_attr( $title ) . '">';
-			}
-
-			$html .= "<img src='{$src[0]}' alt='{$alt}' />";
-
-			if ( $url ) {
-				$html .= "</a>";
-			}
-
-			if ( $caption ) {
-				$html .= "<figcaption>{$caption}</figcaption>";
-			}
-
-			$html .= "</figure>";
 		}
 
 		return $html;
