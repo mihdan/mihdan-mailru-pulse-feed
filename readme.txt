@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
 Requires at least: 5.0
 Tested up to: 5.4
-Stable tag: 0.3.2
+Stable tag: 0.3.3
 Requires PHP: 5.6.20
 
 WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
@@ -81,6 +81,10 @@ add_filter(
 
 == Changelog ==
 
+= 0.3.3 (06.05.2020) =
+* Wrap all `<iframe>` with `<figure>`
+* Remove all parent `<a>` for `<img>`
+
 = 0.3.2 (27.04.2020) =
 * Added h1-h6 tags to allowed list
 * Added table/tbody/tr/th/td tags to allowed list
@@ -93,7 +97,7 @@ add_filter(
 = 0.3 (24.04.2020) =
 * Added settings for Yoast SEO footer
 * Added settings for HTML5 support
-* Wrap all image with `<figure>` via DOMDocument.
+* Wrap all `<img>` with `<figure>` via DOMDocument.
 
 = 0.2.3 (20.04.2020) =
 * Wrap image with `<figure>` tag for fulltext.
