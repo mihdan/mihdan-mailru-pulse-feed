@@ -82,6 +82,7 @@ add_filter(
 == Changelog ==
 
 = 0.3.3 (06.05.2020) =
+* Wrap all `<video>` with `<figure>`
 * Wrap all `<iframe>` with `<figure>`
 * Remove all parent `<a>` for `<img>`
 
