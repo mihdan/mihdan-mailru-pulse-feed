@@ -7,8 +7,9 @@
 
 namespace Mihdan\MailRuPulseFeed;
 
-use DOMDocument;
-use DOMNode;
+use DiDom\Document;
+use DiDom\Element;
+use WPTRT\AdminNotices\Notices;
 
 class Main {
 
@@ -185,13 +186,24 @@ class Main {
 		/**
 		 * TODO: Перенести в SiteHealth.
 		 */
+		$this->version       = MIHDAN_MAILRU_PULSE_FEED_VERSION;
+		$this->slug          = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+		$this->notifications = new Notices();
+
 		if ( ! class_exists( 'DOMDocument' ) ) {
-			add_action(
-				'admin_notices',
-				function () {
-					printf( '<div class="notice notice-error"><p>%s</p></div>', __( 'Для правильной работы плагина <b>Mail.ru Pulse Feed</b> необходимо расширение <b>DOMDocument</b>. Обратитесь в техподдержку вашего хостинга или к вашему системному администратору.', 'mihdan-mailru-pulse-feed' ) );
-				}
+
+			$this->notifications->add(
+				'dom_document_error',
+				false,
+				__( 'Для правильной работы плагина <strong>Mail.ru Pulse Feed</strong> необходимо расширение <strong>DOMDocument</strong>. Обратитесь в техподдержку вашего хостинга или к вашему системному администратору.', 'mihdan-mailru-pulse-feed' ),
+				[
+					'scope'         => 'user',
+					'option_prefix' => $this->slug,
+					'type'          => 'error',
+				]
 			);
+
+			$this->notifications->boot();
 
 			return false;
 		}
@@ -199,18 +211,21 @@ class Main {
 		return true;
 	}
 
+	/**
+	 * Setup requirements.
+	 */
 	private function setup() {
-		$this->version       = MIHDAN_MAILRU_PULSE_FEED_VERSION;
-		$this->slug          = str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG );
 		$this->wposa_obj     = new WP_OSA();
 		$this->settings      = new Settings( $this->wposa_obj );
-		$this->notifications = new Notifications( $this->slug );
 		$this->widget        = new Widget( $this->wposa_obj );
 
 		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
 		$this->total_posts = $this->wposa_obj->get_option( 'total_posts', 'feed', 10 );
 	}
 
+	/**
+	 * Setup hooks.
+	 */
 	private function hooks() {
 		add_action( 'init', array( $this, 'add_feed' ) );
 		add_action( 'init', array( $this, 'flush_rewrite_rules' ), 99 );
@@ -224,17 +239,39 @@ class Main {
 		add_action( 'category_edit_form', array( $this, 'add_category_meta_box' ) );
 		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
-
+		add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
 		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
-
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
-
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_thumbnail_to_enclosure' ) );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Add admin footer text.
+	 *
+	 * @param string $text Default text.
+	 *
+	 * @return string
+	 */
+	public function admin_footer_text( $text ) {
+
+		$current_screen = get_current_screen();
+
+		$white_list = array(
+			'settings_page_mihdan_mailru_pulse_feed',
+		);
+
+		if ( isset( $current_screen ) && in_array( $current_screen->id, $white_list ) ) {
+			$text = '<span class="mytf-admin-footer-text">';
+			$text .= sprintf( __( 'Enjoyed <strong>Mail.ru Pulse Feed</strong>? Please leave us a <a href="%s" target="_blank" title="Rate & review it">★★★★★</a> rating. We really appreciate your support', 'mihdan-yandex-turbo-feed' ), 'https://wordpress.org/support/plugin/mihdan-mailru-pulse-feed/reviews/#new-post' );
+			$text .= '</span>';
+		}
+
+		return  $text;
 	}
 
 	/**
@@ -320,71 +357,103 @@ class Main {
 	 *
 	 * @param  string $content
 	 * @param  int    $post_id Post ID.
+	 *
 	 * @return string
+	 *
 	 * @link   https://wp-punk.com/domdocument/
+	 * @link   https://help.mail.ru/feed/fulltext
 	 */
 	public function wrap_image_with_figure( $content, $post_id ) {
-		$dom = new DOMDocument( '1.0', 'UTF-8' );
-		$dom->preserveWhiteSpace = false;
-		$dom->formatOutput       = true;
 
-		libxml_use_internal_errors( true );
-		$dom->loadHTML( '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>' . $content . '</body></html>' );
-		libxml_clear_errors();
+		$document = new Document();
+		$document->format();
+		$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 
-		$figure = $dom->createElement( 'figure' );
-		$images = $dom->getElementsByTagName('img');
+		/**
+		 * Убираем ссылки со всех картинок.
+		 * a>img -> img
+		 */
+		$anchored_images = $document->find( 'a > img' );
 
-		/** @var \DOMElement $image */
-		foreach ( $images as $image ) {
+		if ( count( $anchored_images ) > 0 ) {
+			foreach ( $anchored_images as $anchored_image ) {
+				// Get image URL.
+				$src = $anchored_image->getAttribute( 'src' );
 
-			// Get image URL.
-			$src = $image->getAttribute( 'src' );
+				if ( ! $src ) {
+					continue;
+				}
 
-			if ( ! $src ) {
-				continue;
+				$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
+
+				$anchored_image->parent()->replace( $anchored_image );
 			}
-
-			// Set image url & type to array.
-			$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
-
-			$parent = $image->parentNode;
-
-			if ( 'figure' === $parent->tagName ) {
-				continue;
-			}
-
-			$figure_cloned = $figure->cloneNode();
-
-			$parent->replaceChild( $figure_cloned,$image );
-			$figure_cloned->appendChild( $image );
 		}
 
-		$dom->encoding = 'UTF-8';
+		/**
+		 * Оборачиваем все картинки в <figure>.
+		 * p>img -> figure>img
+		 */
+		$nonfigured_images = $document->find( 'p > img' );
 
-		return force_balance_tags(
-			$this->dom_inner_html(
-				$dom->getElementsByTagName( 'body' )->item( 0)
-			)
-		);
-	}
+		if ( count( $nonfigured_images ) > 0 ) {
+			foreach ( $nonfigured_images as $nonfigured_image ) {
+				// Get image URL.
+				$src = $nonfigured_image->getAttribute( 'src' );
 
-	/**
-	 * Get innerHTML of DOMNode.
-	 *
-	 * @param DOMNode $element Node.
-	 *
-	 * @return string
-	 */
-	private function dom_inner_html( DOMNode $element ) {
-		$html      = '';
-		$children  = $element->childNodes;
+				if ( ! $src ) {
+					continue;
+				}
 
-		foreach ( $children as $child ) {
-			$html .= $element->ownerDocument->saveHTML( $child );
+				$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
+
+				$figure = new Element( 'figure' );
+				$figure->setInnerHtml( $nonfigured_image->html() );
+				$nonfigured_image->parent()->replace( $figure );
+			}
 		}
 
-		return $html;
+		/**
+		 * Оборачиваем все <iframe> в <figure>.
+		 * p>iframe -> figure>iframe
+		 */
+		$nonfigured_frames = $document->find( 'p > iframe' );
+
+		if ( count( $nonfigured_frames ) > 0 ) {
+			foreach ( $nonfigured_frames as $nonfigured_frame ) {
+				$figure = new Element( 'figure' );
+				$figure->setInnerHtml( $nonfigured_frame->html() );
+				$nonfigured_frame->parent()->replace( $figure );
+			}
+		}
+
+		/**
+		 * Оборачиваем все <video> в <figure>,
+		 * если они еще не обернуты. Gutenberg сам оборачивает.
+		 *
+		 * video -> figure>video
+		 * figure>video -> figure>video
+		 */
+		$videos = $document->find( 'video' );
+
+		if ( count( $videos ) > 0 ) {
+			foreach ( $videos as $video ) {
+				$parent = $video->parentNode;
+
+				// Пропустить видео, если оно уже обернуто в <figure>
+				if ( 'figure' === $parent->tagName ) {
+					continue;
+				}
+
+				$figure = new Element( 'figure' );
+				$figure->setInnerHtml( $video->html() );
+				$video->replace( $figure );
+			}
+		}
+
+		$content = $document->toElement()->innerHtml();
+
+		return force_balance_tags( $content );
 	}
 
 	/**
