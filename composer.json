@@ -29,7 +29,8 @@
     "composer/installers": "*",
     "wptrt/admin-notices": "^1.0",
     "ext-dom": "*",
-    "ext-libxml": "*"
+    "ext-libxml": "*",
+    "imangazaliev/didom": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
