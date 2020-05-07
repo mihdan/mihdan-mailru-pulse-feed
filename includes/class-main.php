@@ -230,8 +230,16 @@ class Main {
 		add_action( 'init', array( $this, 'add_feed' ) );
 		add_action( 'init', array( $this, 'flush_rewrite_rules' ), 99 );
 		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
+
+		// The SEO Framework.
+		add_action( 'the_seo_framework_after_front_init', [ $this, 'disable_seo_framework_for_feed'] );
+
+		// SEO by Yoast.
 		add_filter( 'wpseo_include_rss_footer', array( $this, 'hide_wpseo_rss_footer' ) );
+
+		// All In One SEO Pack.
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
+
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
 		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
@@ -755,6 +763,21 @@ class Main {
 		if ( is_feed( $this->feedname ) ) {
 			header( 'X-Robots-Tag: index, follow', true );
 		}
+	}
+
+	/**
+	 * Disable inserting source link
+	 * by The SEO Framework plugin from excerpt.
+	 */
+	public function disable_seo_framework_for_feed() {
+
+		if ( is_feed( $this->feedname ) ) {
+			return;
+		}
+
+		$instance = the_seo_framework();
+		remove_filter( 'the_content_feed', [ $instance, 'the_content_feed' ] );
+		remove_filter( 'the_excerpt_rss', [ $instance, 'the_content_feed' ] );
 	}
 
 	public function on_activate() {
