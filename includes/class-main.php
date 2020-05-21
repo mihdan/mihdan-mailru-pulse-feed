@@ -251,11 +251,32 @@ class Main {
 		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_thumbnail_to_enclosure' ) );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Add a post thumbnail to beginning of the feed item.
+	 *
+	 * @param string $content Item content.
+	 * @param int    $post_id Post ID.
+	 *
+	 * @return string
+	 */
+	public function add_thumbnail_to_item_content( $content, $post_id ) {
+		if (
+			'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) &&
+			'on' === $this->wposa_obj->get_option( 'post_thumbnail', 'feed' ) &&
+			has_post_thumbnail( $post_id )
+		) {
+			$content = '<figure>' . get_the_post_thumbnail( $post_id, 'full' ) . '</figure>' . $content;
+		}
+
+		return $content;
 	}
 
 	/**
@@ -376,6 +397,9 @@ class Main {
 		$document = new Document();
 		$document->format();
 		$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+
+		// TODO: Experiment.
+		// $a = $document->xpath( 'video[not(ancestor::figure)]' ); print_r($a);
 
 		/**
 		 * Убираем ссылки со всех картинок.

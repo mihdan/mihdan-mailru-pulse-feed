@@ -169,6 +169,16 @@ class Settings {
 			)
 		);
 
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'   => 'post_thumbnail',
+				'type' => 'checkbox',
+				'name' => __( 'Post thumbnail', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
 		$this->wposa_obj->add_section(
 			array(
 				'id'    => 'source',
