@@ -329,6 +329,41 @@ class Main {
 	}
 
 	/**
+	 * Get basename for enclosure URL.
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return string|string[]|null
+	 */
+	public function get_basename_for_enclosure_url( $url ) {
+		return preg_replace( '#\?.*#', '', $url );
+	}
+
+	/**
+	 * Replace entities.
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return string
+	 *
+	 * @link https://yandex.ru/support/news/feed.html#code
+	 */
+	public function replace_entities( $url ) {
+		$replacements = array(
+			'&'  => '&amp;',  // Амперсанд.
+			'>'  => '&gt;',   // Правая угловая скобка.
+			'<'  => '&lt;',   // Левая угловая скобка.
+			'"'  => '&quot;', // Знак кавычек.
+			'\'' => '&apos;', // Апостроф.
+		);
+
+		$replacements = apply_filters( 'mihdan_mailru_pulse_feed_entities_replacement', $replacements );
+		$url          = strtr( $url, $replacements );
+
+		return $url;
+	}
+
+	/**
 	 * Add enclosure to array.
 	 *
 	 * @param int    $post_id Post ID.
@@ -378,7 +413,7 @@ class Main {
 	 * @return mixed
 	 */
 	private function get_mime_type_from_url( $url ) {
-		return wp_check_filetype( $url )['type'];
+		return wp_check_filetype( $this->get_basename_for_enclosure_url( $url ) )['type'];
 	}
 
 	/**
