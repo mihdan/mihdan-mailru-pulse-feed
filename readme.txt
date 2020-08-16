@@ -85,8 +85,13 @@ add_filter(
 
 == Changelog ==
 
+= 0.3.5 (16.08.2020) =
+* Added new filter `mihdan_mailru_pulse_feed_entities_replacement`
+* Added support for WordPress 5.5
+* Fixed bug with `EntityRef`
+
 = 0.3.4 (21.05.2020) =
-* Add a post thumbnail to beginning of the feed item
+* Added a post thumbnail to beginning of the feed item
 
 = 0.3.3 (06.05.2020) =
 * Wrap all `<video>` with `<figure>`
