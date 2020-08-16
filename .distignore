@@ -8,6 +8,7 @@
 .travis.yml
 .DS_Store
 .idea
+.wordpress-org
 Thumbs.db
 behat.yml
 circle.yml
