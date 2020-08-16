@@ -3,14 +3,14 @@
  * Mihdan: Mail.ru Pulse Feed
  *
  * Plugin Name: Mihdan: Mail.ru Pulse Feed
- * Plugin URI: https://github.com/mihdan/mihdan-mailru-pulse-feed
+ * Plugin URI: https://wordpress.org/plugins/mihdan-mailru-pulse-feed/
  * Description: WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
  * Author: Mikhail Kobzarev
  * Author URI: https://www.kobzarev.com/
  * Requires at least: 5.0
- * Tested up to: 5.4
- * Version: 0.3.4
- * Stable tag: 0.3.4
+ * Tested up to: 5.5
+ * Version: 0.3.5
+ * Stable tag: 0.3.5
  *
  * Text Domain: mihdan-mailru-pulse-feed
  * Domain Path: /languages/
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'MIHDAN_MAILRU_PULSE_FEED_VERSION', '0.3.4' );
+define( 'MIHDAN_MAILRU_PULSE_FEED_VERSION', '0.3.5' );
 define( 'MIHDAN_MAILRU_PULSE_FEED_PATH', __DIR__ );
 define( 'MIHDAN_MAILRU_PULSE_FEED_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 define( 'MIHDAN_MAILRU_PULSE_FEED_FILE', __FILE__ );
