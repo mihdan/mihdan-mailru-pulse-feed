@@ -373,7 +373,7 @@ class Main {
 	private function set_enclosure( $post_id, $url, $type ) {
 		$hash = md5( $url );
 		$this->enclosures[ $post_id ][ $hash ] = array(
-			'url'  => $url,
+			'url'  => $this->replace_entities( $url ),
 			'type' => $type,
 		);
 	}

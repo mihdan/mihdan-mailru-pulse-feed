@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
 Requires at least: 5.0
 Tested up to: 5.5
-Stable tag: 0.3.6
+Stable tag: 0.3.7
 Requires PHP: 5.6.20
 
 WordPress плагин, формирующий ленту для новой рекомендательной системы Пульс от компании Mail.ru.
@@ -84,6 +84,9 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.3.7 (17.08.2020) =
+* Fixed bug with entities
 
 = 0.3.6 (17.08.2020) =
 * Fixed bug with plugin update
