@@ -86,7 +86,8 @@ add_filter(
 == Changelog ==
 
 = 0.3.8 (19.10.2020) =
-* Added new hook
+* Added new filter `mihdan_mailru_pulse_feed_allowable_tags`
+* Added support for "The Voux" theme.
 
 = 0.3.7 (17.08.2020) =
 * Fixed bug with entities
