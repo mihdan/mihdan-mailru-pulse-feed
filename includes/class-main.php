@@ -221,6 +221,8 @@ class Main {
 
 		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
 		$this->total_posts = $this->wposa_obj->get_option( 'total_posts', 'feed', 10 );
+
+		$this->allowable_tags = apply_filters( 'mihdan_mailru_pulse_feed_allowable_tags', $this->allowable_tags );
 	}
 
 	/**
@@ -239,6 +241,15 @@ class Main {
 
 		// All In One SEO Pack.
 		add_action( 'template_redirect', array( $this, 'send_headers_for_aio_seo_pack' ), 20 );
+
+		// "The Voux" theme. Disable lazy load for feed.
+		add_action(
+			'after_setup_theme',
+			function() {
+				remove_filter( 'the_content', 'thb_lazy_images_filter', 200 );
+				remove_filter( 'wp_get_attachment_image_attributes', 'thb_lazy_low_quality', 10 );
+			}
+		);
 
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
