@@ -2,8 +2,8 @@
 Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
 Requires at least: 5.0
-Tested up to: 5.5
-Stable tag: 0.3.9
+Tested up to: 5.6
+Stable tag: 0.3.10
 Requires PHP: 5.6.20
 
 Плагин, формирует ленту для рекомендательной системы Пульс от компании Mail.ru.
@@ -74,6 +74,19 @@ add_filter(
 
 В настройках ленты поставьте галочку "Вставить изображение записи в начало полнотекстовой ленты".
 
+= Как автоматически исключать новые записи из ленты =
+
+Добавьте в файл `functions.php` вашей дочерней темы или через плагин сниппетов следующий код:
+
+`add_filter( 'mihdan_mailru_pulse_feed_exclude_post_by_default', '__return_true' );`
+
+= Как автоматически исключать новые термы из ленты =
+
+Добавьте в файл `functions.php` вашей дочерней темы или через плагин сниппетов следующий код:
+
+`add_filter( 'mihdan_mailru_pulse_feed_exclude_term_by_default', '__return_true' );`
+
+
 = Вместо ленты я вижу с ошибку 404 =
 
 Скорее всего, нужно обновить постоянные ссылки. Перейти Консоль -> Настройки -> Постоянные ссылки. После посещения этой страницы в админке попробуйте снова открыть вашу ленту.
@@ -106,6 +119,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.3.10 (02.12.2020) =
+* Added new filter `mihdan_mailru_pulse_feed_exclude_post_by_default`
+* Added new filter `mihdan_mailru_pulse_feed_exclude_term_by_default`
 
 = 0.3.9 (20.10.2020) =
 * Updated readme
