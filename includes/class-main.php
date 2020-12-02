@@ -251,6 +251,9 @@ class Main {
 			}
 		);
 
+		add_filter( 'default_post_metadata', array( $this, 'exclude_post_by_default' ), 10, 3 );
+		add_filter( 'default_post_metadata', array( $this, 'exclude_term_by_default' ), 10, 3 );
+
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
 		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
@@ -268,6 +271,44 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Exclude post from feed by default.
+	 *
+	 * @param mixed  $value The value to return, either a single metadata value or an array
+	 *                      of values depending on the value of `$single`.
+	 * @param int    $object_id ID of the object metadata is for.
+	 * @param string $meta_key Metadata key.
+	 *
+	 * @return mixed
+	 */
+	public function exclude_post_by_default( $value, $object_id, $meta_key ) {
+
+		if ( $this->slug . '_exclude' !== $meta_key ) {
+			return $value;
+		}
+
+		return apply_filters( 'mihdan_mailru_pulse_feed_exclude_post_by_default', false );
+	}
+
+	/**
+	 * Exclude term from feed by default.
+	 *
+	 * @param mixed  $value The value to return, either a single metadata value or an array
+	 *                      of values depending on the value of `$single`.
+	 * @param int    $object_id ID of the object metadata is for.
+	 * @param string $meta_key Metadata key.
+	 *
+	 * @return mixed
+	 */
+	public function exclude_term_by_default( $value, $object_id, $meta_key ) {
+
+		if ( $this->slug . '_exclude' !== $meta_key ) {
+			return $value;
+		}
+
+		return apply_filters( 'mihdan_mailru_pulse_feed_exclude_term_by_default', false );
 	}
 
 	/**
