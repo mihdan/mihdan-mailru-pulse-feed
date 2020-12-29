@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
 Requires at least: 5.0
 Tested up to: 5.6
-Stable tag: 0.3.10
+Stable tag: 0.3.11
 Requires PHP: 5.6.20
 
 Плагин, формирует ленту для рекомендательной системы Пульс от компании Mail.ru.
@@ -119,6 +119,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.3.11 (02.12.2020) =
+* Full text feed is now enabled by default
+* Fixed bugs
 
 = 0.3.10 (02.12.2020) =
 * Added new filter `mihdan_mailru_pulse_feed_exclude_post_by_default`
