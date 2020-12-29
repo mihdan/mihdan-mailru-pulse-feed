@@ -138,7 +138,7 @@ class Main {
 				'category' => 'category',
 			],
 			'total_posts' => 1000,
-			'fulltext'    => 'off',
+			'fulltext'    => 'on',
 		],
 		'widget' => [
 			'auto_append' => 'off',
@@ -271,6 +271,16 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * @return mixed|string|string[]|void
+	 */
+	public function get_the_content_feed( $post_id = null ) {
+		$content = apply_filters( 'the_content', get_the_content( null, false, $post_id ) );
+		$content = str_replace( ']]>', ']]&gt;', $content );
+
+		return $content;
 	}
 
 	/**
@@ -517,6 +527,11 @@ class Main {
 
 		if ( count( $nonfigured_images ) > 0 ) {
 			foreach ( $nonfigured_images as $nonfigured_image ) {
+
+				if ( ! $nonfigured_image->tag ) {
+					continue;
+				}
+
 				// Get image URL.
 				$src = $nonfigured_image->getAttribute( 'src' );
 
@@ -734,6 +749,11 @@ class Main {
 				esc_url( 'https://www.kobzarev.com/donate/' ),
 				esc_html__( 'Donate', 'mihdan-mailru-pulse-feed' )
 			);
+			$actions[] = sprintf(
+				'<a href="%s" target="_blank" class="">%s</a>',
+				esc_url( site_url( sprintf( '/feed/%s/', $this->get_feed_name() ) ) ),
+				esc_html__( 'Your Feed', 'mihdan-mailru-pulse-feed' )
+			);
 		}
 
 		return $actions;
@@ -825,6 +845,10 @@ class Main {
 
 	public function after_setup_theme() {
 		$this->feedname = apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+	}
+
+	public function get_feed_name() {
+		return $this->feedname;
 	}
 
 	public function add_feed() {

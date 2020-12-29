@@ -29,7 +29,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 				<pubDate><?php echo esc_html( get_post_time( 'r', true ) ); ?></pubDate>
 				<description><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', get_the_excerpt(), get_the_ID() ); ?>]]></description>
 				<?php if ( 'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) ) : ?>
-					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', get_the_content_feed(), get_the_ID() ); ?>]]></content:encoded>
+					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() ); ?>]]></content:encoded>
 				<?php endif; ?>
 				<?php do_action( 'mihdan_mailru_pulse_feed_item', get_the_ID() ); ?>
 			</item>

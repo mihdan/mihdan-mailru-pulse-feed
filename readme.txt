@@ -122,7 +122,7 @@ add_filter(
 
 = 0.3.11 (02.12.2020) =
 * Full text feed is now enabled by default
-* Fixed bugs
+* Fixed bug "Couldn't fetch DOMElement"
 
 = 0.3.10 (02.12.2020) =
 * Added new filter `mihdan_mailru_pulse_feed_exclude_post_by_default`

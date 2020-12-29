@@ -154,6 +154,7 @@ class Settings {
 			array(
 				'id'   => 'fulltext',
 				'type' => 'checkbox',
+				'std'  => 'on',
 				'name' => __( 'Fulltext', 'mihdan-mailru-pulse-feed' ),
 				'desc' => __( 'Enable Fulltext Support', 'mihdan-mailru-pulse-feed' ),
 			)
