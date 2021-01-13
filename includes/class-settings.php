@@ -195,8 +195,9 @@ class Settings {
 				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
 				'desc' => sprintf(
 					/* translators: URL to feed */
-					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>.', 'mihdan-mailru-pulse-feed' ),
-					get_home_url() . '/feed/mihdan-mailru-pulse-feed/'
+					__( 'Your feed is available by url <a href="%1$s/feed/%2$s/" target="_blank">%1$s/feed/%2$s/</a>.', 'mihdan-mailru-pulse-feed' ),
+					get_home_url(),
+					Main::get_feed_name()
 				),
 			)
 		);

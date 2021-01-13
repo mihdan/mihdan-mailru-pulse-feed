@@ -13,7 +13,7 @@ use WPTRT\AdminNotices\Notices;
 
 class Main {
 
-	private $feedname;
+	private static $feedname;
 	private $allowable_tags = array(
 		'a'          => array(
 			'href'   => true,
@@ -231,7 +231,6 @@ class Main {
 	private function hooks() {
 		add_action( 'init', array( $this, 'add_feed' ) );
 		add_action( 'init', array( $this, 'flush_rewrite_rules' ), 99 );
-		add_action( 'after_setup_theme', array( $this, 'after_setup_theme' ) );
 
 		// The SEO Framework.
 		add_action( 'the_seo_framework_after_front_init', [ $this, 'disable_seo_framework_for_feed'] );
@@ -765,7 +764,7 @@ class Main {
 	 * @param \WP_Query $wp_query объект запроса
 	 */
 	public function alter_query( \WP_Query $wp_query ) {
-		if ( $wp_query->is_main_query() && $wp_query->is_feed( $this->feedname ) ) {
+		if ( $wp_query->is_main_query() && $wp_query->is_feed( self::get_feed_name() ) ) {
 			// Ограничить посты 50-ю
 			$wp_query->set( 'posts_per_rss', $this->total_posts );
 
@@ -821,7 +820,7 @@ class Main {
 	}
 
 	function the_excerpt_rss( $excerpt ) {
-		if ( is_feed( $this->feedname ) ) {
+		if ( is_feed( self::get_feed_name() ) ) {
 			$excerpt = wp_kses( $excerpt, $this->allowable_tags );
 		}
 
@@ -836,23 +835,19 @@ class Main {
 	 * @return string
 	 */
 	function kses_content( $content ) {
-		if ( is_feed( $this->feedname ) ) {
+		if ( is_feed( self::get_feed_name() ) ) {
 			$content = wp_kses( $content, $this->allowable_tags );
 		}
 
 		return $content;
 	}
 
-	public function after_setup_theme() {
-		$this->feedname = apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
-	}
-
-	public function get_feed_name() {
-		return $this->feedname;
+	public static function get_feed_name() {
+		return apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
 	}
 
 	public function add_feed() {
-		add_feed( $this->feedname, array( $this, 'require_feed_template' ) );
+		add_feed( self::get_feed_name(), array( $this, 'require_feed_template' ) );
 	}
 
 	public function require_feed_template() {
@@ -881,7 +876,7 @@ class Main {
 	 */
 	public function hide_wpseo_rss_footer( $include_footer ) {
 
-		if ( is_feed( $this->feedname ) ) {
+		if ( is_feed( self::get_feed_name() ) ) {
 			if ( 'on' === $this->wposa_obj->get_option( 'yoast_seo_footer', 'feed' ) ) {
 				$include_footer = true;
 			} else {
@@ -895,7 +890,7 @@ class Main {
 	public function send_headers_for_aio_seo_pack() {
 		// Добавим заголовок `X-Robots-Tag`
 		// для решения проблемы с сеошными плагинами.
-		if ( is_feed( $this->feedname ) ) {
+		if ( is_feed( self::get_feed_name() ) ) {
 			header( 'X-Robots-Tag: index, follow', true );
 		}
 	}
@@ -906,7 +901,7 @@ class Main {
 	 */
 	public function disable_seo_framework_for_feed() {
 
-		if ( is_feed( $this->feedname ) ) {
+		if ( is_feed( self::get_feed_name() ) ) {
 			return;
 		}
 
