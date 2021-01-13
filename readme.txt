@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: mailru, pulse, feed, seo, seo-friendly
 Requires at least: 5.0
 Tested up to: 5.6
-Stable tag: 0.3.12
+Stable tag: 0.3.13
 Requires PHP: 5.6.20
 
 Плагин, формирует ленту для рекомендательной системы Пульс от компании Mail.ru.
@@ -119,6 +119,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.3.13 (13.01.2021) =
+* Added new filter `mihdan_mailru_pulse_feed_item_title`
+* Added the ability to override the post title inside the feed
 
 = 0.3.12 (13.01.2021) =
 * Fixed bug with filter `mihdan_mailru_pulse_feed_feedname`

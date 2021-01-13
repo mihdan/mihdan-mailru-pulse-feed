@@ -691,7 +691,7 @@ class Main {
 			__( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ),
 			[ $this, 'render_meta_box' ],
 			$this->post_type,
-			'side',
+			'advanced',
 			'high'
 		);
 	}
@@ -703,10 +703,34 @@ class Main {
 	 */
 	public function render_meta_box( $post ) {
 		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
+		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
 		?>
-		<label for="<?php echo esc_attr( $this->slug ); ?>_exclude" title="Включить/Исключить запись из ленты">
-			<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?>
-		</label>
+		<table class="form-table">
+			<tbody>
+			<tr>
+				<th>
+					<label for="<?php echo esc_attr( $this->slug ); ?>_title">
+						<?php _e( 'Title', 'mihdan-mailru-pulse-feed' ); ?>
+					</label>
+				</th>
+				<td>
+					<input type="text" class="regular-text" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
+					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label for="<?php echo esc_attr( $this->slug ); ?>_exclude">
+						<?php _e( 'Exclude', 'mihdan-mailru-pulse-feed' ); ?>
+					</label>
+				</th>
+				<td>
+					<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>>
+					<p class="description"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
+			</tbody>
+		</table>
 		<?php
 	}
 	/**
@@ -721,10 +745,17 @@ class Main {
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
+
 		if ( isset( $_POST[ $this->slug . '_exclude' ] ) ) {
 			update_post_meta( $post_id, $this->slug . '_exclude', 1 );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_exclude' );
+		}
+
+		if ( ! empty( $_POST[ $this->slug . '_title' ] ) ) {
+			update_post_meta( $post_id, $this->slug . '_title', $_POST[ $this->slug . '_title' ] );
+		} else {
+			delete_post_meta( $post_id, $this->slug . '_title' );
 		}
 	}
 
@@ -844,6 +875,23 @@ class Main {
 
 	public static function get_feed_name() {
 		return apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+	}
+
+	/**
+	 * Get post title for rss item.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return string
+	 */
+	public function get_post_title( $post_id = null ) {
+		$title = get_the_title_rss();
+
+		if ( ! empty( get_post_meta( $post_id, $this->slug . '_title', true ) ) ) {
+			$title = get_post_meta( $post_id, $this->slug . '_title', true );
+		}
+
+		return apply_filters( 'mihdan_mailru_pulse_feed_item_title', $title );
 	}
 
 	public function add_feed() {

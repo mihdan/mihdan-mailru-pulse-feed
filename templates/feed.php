@@ -2,6 +2,9 @@
 /**
  * @var \Mihdan\MailRuPulseFeed\Main $this
  */
+
+use Mihdan\MailRuPulseFeed\Main as Main;
+
 header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=' . $this->wposa_obj->get_option( 'charset', 'feed' ), true );
 echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset', 'feed' ) . '"?' . '>';
 ?>
@@ -24,7 +27,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 				<?php if ( $this->is_amp_support() ) : ?>
 					<amplink><?php $this->the_amp_permalink( get_the_ID() ); ?></amplink>
 				<?php endif; ?>
-				<title><?php the_title_rss(); ?></title>
+				<title><?php echo esc_html( $this->get_post_title( get_the_ID() ) ); ?></title>
 				<author><?php the_author(); ?></author>
 				<pubDate><?php echo esc_html( get_post_time( 'r', true ) ); ?></pubDate>
 				<description><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', get_the_excerpt(), get_the_ID() ); ?>]]></description>
