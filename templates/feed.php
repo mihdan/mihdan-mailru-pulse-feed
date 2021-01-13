@@ -27,10 +27,10 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 				<?php if ( $this->is_amp_support() ) : ?>
 					<amplink><?php $this->the_amp_permalink( get_the_ID() ); ?></amplink>
 				<?php endif; ?>
-				<title><?php echo esc_html( $this->get_post_title( get_the_ID() ) ); ?></title>
-				<author><?php the_author(); ?></author>
+				<title><![CDATA[<?php echo esc_html( $this->get_post_title( get_the_ID() ) ); ?>]]></title>
+				<author><![CDATA[<?php the_author(); ?>]]></author>
 				<pubDate><?php echo esc_html( get_post_time( 'r', true ) ); ?></pubDate>
-				<description><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', get_the_excerpt(), get_the_ID() ); ?>]]></description>
+				<description><![CDATA[<?php echo esc_html( $this->get_post_excerpt( get_the_ID() ) ); ?>]]></description>
 				<?php if ( 'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) ) : ?>
 					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() ); ?>]]></content:encoded>
 				<?php endif; ?>

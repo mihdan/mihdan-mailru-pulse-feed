@@ -704,6 +704,7 @@ class Main {
 	public function render_meta_box( $post ) {
 		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
 		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
+		$excerpt = (string) get_post_meta( $post->ID, $this->slug . '_excerpt', true );
 		?>
 		<table class="form-table">
 			<tbody>
@@ -716,6 +717,17 @@ class Main {
 				<td>
 					<input type="text" class="regular-text" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
 					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label for="<?php echo esc_attr( $this->slug ); ?>_excerpt">
+						<?php _e( 'Excerpt', 'mihdan-mailru-pulse-feed' ); ?>
+					</label>
+				</th>
+				<td>
+					<textarea class="regular-text" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
+					<p class="description"><?php _e( 'Post excerpt', 'mihdan-mailru-pulse-feed' ); ?></p>
 				</td>
 			</tr>
 			<tr>
@@ -756,6 +768,12 @@ class Main {
 			update_post_meta( $post_id, $this->slug . '_title', $_POST[ $this->slug . '_title' ] );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_title' );
+		}
+
+		if ( ! empty( $_POST[ $this->slug . '_excerpt' ] ) ) {
+			update_post_meta( $post_id, $this->slug . '_excerpt', $_POST[ $this->slug . '_excerpt' ] );
+		} else {
+			delete_post_meta( $post_id, $this->slug . '_excerpt' );
 		}
 	}
 
@@ -891,7 +909,24 @@ class Main {
 			$title = get_post_meta( $post_id, $this->slug . '_title', true );
 		}
 
-		return apply_filters( 'mihdan_mailru_pulse_feed_item_title', $title );
+		return apply_filters( 'mihdan_mailru_pulse_feed_item_title', $title, $post_id );
+	}
+
+	/**
+	 * Get post excerpt for rss item.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return string
+	 */
+	public function get_post_excerpt( $post_id = null ) {
+		$excerpt = get_the_excerpt();
+
+		if ( ! empty( get_post_meta( $post_id, $this->slug . '_excerpt', true ) ) ) {
+			$excerpt = get_post_meta( $post_id, $this->slug . '_excerpt', true );
+		}
+
+		return apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', $excerpt, $post_id );
 	}
 
 	public function add_feed() {

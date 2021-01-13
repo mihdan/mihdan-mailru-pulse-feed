@@ -123,6 +123,7 @@ add_filter(
 = 0.3.13 (13.01.2021) =
 * Added new filter `mihdan_mailru_pulse_feed_item_title`
 * Added the ability to override the post title inside the feed
+* Added the ability to override the post excerpt inside the feed
 
 = 0.3.12 (13.01.2021) =
 * Fixed bug with filter `mihdan_mailru_pulse_feed_feedname`
