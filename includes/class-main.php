@@ -10,6 +10,7 @@ namespace Mihdan\MailRuPulseFeed;
 use DiDom\Document;
 use DiDom\Element;
 use WPTRT\AdminNotices\Notices;
+use Exception;
 
 class Main {
 
@@ -490,101 +491,106 @@ class Main {
 	 */
 	public function wrap_image_with_figure( $content, $post_id ) {
 
-		$document = new Document();
-		$document->format();
-		$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		try {
 
-		// TODO: Experiment.
-		// $a = $document->xpath( 'video[not(ancestor::figure)]' ); print_r($a);
+			$document = new Document();
+			$document->format();
+			$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 
-		/**
-		 * Убираем ссылки со всех картинок.
-		 * a>img -> img
-		 */
-		$anchored_images = $document->find( 'a > img' );
+			// TODO: Experiment.
+			// $a = $document->xpath( 'video[not(ancestor::figure)]' ); print_r($a);
 
-		if ( count( $anchored_images ) > 0 ) {
-			foreach ( $anchored_images as $anchored_image ) {
-				// Get image URL.
-				$src = $anchored_image->getAttribute( 'src' );
+			/**
+			 * Убираем ссылки со всех картинок.
+			 * a>img -> img
+			 */
+			$anchored_images = $document->find( 'a > img' );
 
-				if ( ! $src ) {
-					continue;
+			if ( count( $anchored_images ) > 0 ) {
+				foreach ( $anchored_images as $anchored_image ) {
+					// Get image URL.
+					$src = $anchored_image->getAttribute( 'src' );
+
+					if ( ! $src ) {
+						continue;
+					}
+
+					$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
+
+					$anchored_image->parent()->replace( $anchored_image );
 				}
-
-				$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
-
-				$anchored_image->parent()->replace( $anchored_image );
 			}
-		}
 
-		/**
-		 * Оборачиваем все картинки в <figure>.
-		 * p>img -> figure>img
-		 */
-		$nonfigured_images = $document->find( 'p > img' );
+			/**
+			 * Оборачиваем все картинки в <figure>.
+			 * p>img -> figure>img
+			 */
+			$nonfigured_images = $document->find( 'p > img' );
 
-		if ( count( $nonfigured_images ) > 0 ) {
-			foreach ( $nonfigured_images as $nonfigured_image ) {
+			if ( count( $nonfigured_images ) > 0 ) {
+				foreach ( $nonfigured_images as $nonfigured_image ) {
 
-				if ( ! $nonfigured_image->tag ) {
-					continue;
+					if ( ! $nonfigured_image->tag ) {
+						continue;
+					}
+
+					// Get image URL.
+					$src = $nonfigured_image->getAttribute( 'src' );
+
+					if ( ! $src ) {
+						continue;
+					}
+
+					$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
+
+					$figure = new Element( 'figure' );
+					$figure->setInnerHtml( $nonfigured_image->html() );
+					$nonfigured_image->parent()->replace( $figure );
 				}
+			}
 
-				// Get image URL.
-				$src = $nonfigured_image->getAttribute( 'src' );
+			/**
+			 * Оборачиваем все <iframe> в <figure>.
+			 * p>iframe -> figure>iframe
+			 */
+			$nonfigured_frames = $document->find( 'p > iframe' );
 
-				if ( ! $src ) {
-					continue;
+			if ( count( $nonfigured_frames ) > 0 ) {
+				foreach ( $nonfigured_frames as $nonfigured_frame ) {
+					$figure = new Element( 'figure' );
+					$figure->setInnerHtml( $nonfigured_frame->html() );
+					$nonfigured_frame->parent()->replace( $figure );
 				}
-
-				$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
-
-				$figure = new Element( 'figure' );
-				$figure->setInnerHtml( $nonfigured_image->html() );
-				$nonfigured_image->parent()->replace( $figure );
 			}
-		}
 
-		/**
-		 * Оборачиваем все <iframe> в <figure>.
-		 * p>iframe -> figure>iframe
-		 */
-		$nonfigured_frames = $document->find( 'p > iframe' );
+			/**
+			 * Оборачиваем все <video> в <figure>,
+			 * если они еще не обернуты. Gutenberg сам оборачивает.
+			 *
+			 * video -> figure>video
+			 * figure>video -> figure>video
+			 */
+			$videos = $document->find( 'video' );
 
-		if ( count( $nonfigured_frames ) > 0 ) {
-			foreach ( $nonfigured_frames as $nonfigured_frame ) {
-				$figure = new Element( 'figure' );
-				$figure->setInnerHtml( $nonfigured_frame->html() );
-				$nonfigured_frame->parent()->replace( $figure );
-			}
-		}
+			if ( count( $videos ) > 0 ) {
+				foreach ( $videos as $video ) {
+					$parent = $video->parentNode;
 
-		/**
-		 * Оборачиваем все <video> в <figure>,
-		 * если они еще не обернуты. Gutenberg сам оборачивает.
-		 *
-		 * video -> figure>video
-		 * figure>video -> figure>video
-		 */
-		$videos = $document->find( 'video' );
+					// Пропустить видео, если оно уже обернуто в <figure>
+					if ( 'figure' === $parent->tagName ) {
+						continue;
+					}
 
-		if ( count( $videos ) > 0 ) {
-			foreach ( $videos as $video ) {
-				$parent = $video->parentNode;
-
-				// Пропустить видео, если оно уже обернуто в <figure>
-				if ( 'figure' === $parent->tagName ) {
-					continue;
+					$figure = new Element( 'figure' );
+					$figure->setInnerHtml( $video->html() );
+					$video->replace( $figure );
 				}
-
-				$figure = new Element( 'figure' );
-				$figure->setInnerHtml( $video->html() );
-				$video->replace( $figure );
 			}
-		}
 
-		$content = $document->toElement()->innerHtml();
+			$content = $document->toElement()->innerHtml();
+		} catch ( Exception $e ) {
+			$content = sprintf( 'Выброшено исключение "%s" в файле %s на строке %s.', $e->getMessage(), $e->getFile(), $e->getLine() );
+		}
 
 		return force_balance_tags( $content );
 	}

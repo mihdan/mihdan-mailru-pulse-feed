@@ -14,9 +14,13 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 		<link><?php echo esc_url( $this->wposa_obj->get_option( 'link', 'source' ) ); ?></link>
 		<description><?php echo esc_html( $this->wposa_obj->get_option( 'description', 'source' ) ); ?></description>
 		<language><?php echo esc_html( $this->wposa_obj->get_option( 'language', 'source' ) ); ?></language>
-		<generator>mihdan-mailru-pulse-feed</generator>
+		<generator>Mail.ru Pulse Feed by mihdan, v<?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></generator>
+		<webMaster>mikhail@kobzarev.com (Mikhail Kobzarev)</webMaster>
+		<docs>https://ru.wordpress.org/plugins/mihdan-mailru-pulse-feed/</docs>
 		<image>
 			<url><?php echo esc_url( $this->wposa_obj->get_option( 'image', 'source' ) ); ?></url>
+			<title><?php echo esc_html( $this->wposa_obj->get_option( 'title', 'source' ) ); ?></title>
+			<link><?php echo esc_url( $this->wposa_obj->get_option( 'link', 'source' ) ); ?></link>
 		</image>
 		<?php do_action( 'rss2_head' ); ?>
 		<?php do_action( 'mihdan_mailru_pulse_feed_head' ); ?>
