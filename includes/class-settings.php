@@ -5,6 +5,8 @@
  */
 namespace Mihdan\MailRuPulseFeed;
 
+use WP_Plugin_Install_List_Table;
+
 class Settings {
 	/**
 	 * @var WP_OSA
@@ -54,6 +56,33 @@ class Settings {
 	public function hooks() {
 		add_action( 'init', [ $this, 'setup' ], 100 );
 		add_action( 'init', [ $this, 'fields' ], 111 );
+		add_filter( 'install_plugins_nonmenu_tabs', array( $this, 'install_plugins_nonmenu_tabs' ) );
+		add_filter( 'install_plugins_table_api_args_' . MIHDAN_MAILRU_PULSE_FEED_SLUG, array( $this, 'install_plugins_table_api_args' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+	}
+
+	public function admin_enqueue_scripts() {
+		wp_enqueue_script( 'plugin_install' );
+		wp_enqueue_script( 'updates' );
+		add_thickbox();
+	}
+
+	public function install_plugins_nonmenu_tabs( $tabs ) {
+
+		$tabs[] = MIHDAN_MAILRU_PULSE_FEED_SLUG;
+
+		return $tabs;
+	}
+
+	public function install_plugins_table_api_args( $args ) {
+		global $paged;
+
+		return array(
+			'page'     => $paged,
+			'per_page' => 100,
+			'locale'   => get_user_locale(),
+			'author'   => 'mihdan',
+		);
 	}
 
 	public function fields() {
@@ -297,13 +326,52 @@ class Settings {
 
 		$this->wposa_obj->add_section(
 			array(
-				'id'    => 'contacts',
+				'id'    => 'mmpf_plugins',
+				'title' => __( 'Plugins', 'mihdan-mailru-pulse-feed' ),
+				'desc'  => __( 'Другие плагины автора', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'mmpf_plugins',
+			array(
+				'id'   => 'plugins',
+				'type' => 'html',
+				'name' => '',
+				'desc' => function () {
+					$transient = MIHDAN_MAILRU_PULSE_FEED_SLUG . '-plugins';
+					$cached    = get_transient( $transient );
+
+					if ( false !== $cached ) {
+						return $cached;
+					}
+
+					ob_start();
+					require_once ABSPATH . 'wp-admin/includes/class-wp-plugin-install-list-table.php';
+					$_POST['tab'] = MIHDAN_MAILRU_PULSE_FEED_SLUG;
+					$table = new WP_Plugin_Install_List_Table();
+					$table->prepare_items();
+
+
+					$table->display();
+
+					$content = ob_get_clean();
+					set_transient( $transient, $content, 1 * DAY_IN_SECONDS );
+
+					return $content;
+				},
+			)
+		);
+
+		$this->wposa_obj->add_section(
+			array(
+				'id'    => 'mmpf_contacts',
 				'title' => __( 'Contacts', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 
 		$this->wposa_obj->add_field(
-			'contacts',
+			'mmpf_contacts',
 			array(
 				'id'   => 'help',
 				'type' => 'html',
@@ -313,7 +381,7 @@ class Settings {
 		);
 
 		$this->wposa_obj->add_field(
-			'contacts',
+			'mmpf_contacts',
 			array(
 				'id'   => 'donate',
 				'type' => 'html',
@@ -323,7 +391,7 @@ class Settings {
 		);
 
 		$this->wposa_obj->add_field(
-			'contacts',
+			'mmpf_contacts',
 			array(
 				'id'   => 'mark',
 				'type' => 'html',
@@ -333,7 +401,7 @@ class Settings {
 		);
 
 		$this->wposa_obj->add_field(
-			'contacts',
+			'mmpf_contacts',
 			array(
 				'id'   => 'plugins',
 				'type' => 'html',

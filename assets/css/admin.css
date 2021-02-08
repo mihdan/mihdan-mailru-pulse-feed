@@ -1,0 +1,13 @@
+.mmpf-form-control {
+	width: 100%;
+	max-width: 500px;
+}
+.mmpf-form-td {
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+	padding-top: 0 !important;
+}
+.mmpf-form-th {
+	padding-top: 0 !important;
+	padding-bottom: 10px !important;
+}

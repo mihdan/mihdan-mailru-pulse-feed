@@ -268,9 +268,17 @@ class Main {
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_thumbnail_to_enclosure' ) );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Admin enqueue scripts.
+	 */
+	public function admin_enqueue_scripts() {
+		wp_enqueue_style( MIHDAN_MAILRU_PULSE_FEED_SLUG, MIHDAN_MAILRU_PULSE_FEED_URL . '/assets/css/admin.css' );
 	}
 
 	/**
@@ -697,8 +705,8 @@ class Main {
 			__( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ),
 			[ $this, 'render_meta_box' ],
 			$this->post_type,
-			'advanced',
-			'high'
+			'side',
+			'default'
 		);
 	}
 
@@ -715,36 +723,43 @@ class Main {
 		<table class="form-table">
 			<tbody>
 			<tr>
-				<th>
+				<th class="mmpf-form-th">
 					<label for="<?php echo esc_attr( $this->slug ); ?>_title">
 						<?php _e( 'Title', 'mihdan-mailru-pulse-feed' ); ?>
 					</label>
 				</th>
-				<td>
-					<input type="text" class="regular-text" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
+			</tr>
+			<tr>
+				<td class="mmpf-form-td">
+					<input type="text" class="mmpf-form-control" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
 					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th>
+				<th class="mmpf-form-th">
 					<label for="<?php echo esc_attr( $this->slug ); ?>_excerpt">
 						<?php _e( 'Excerpt', 'mihdan-mailru-pulse-feed' ); ?>
 					</label>
 				</th>
-				<td>
-					<textarea class="regular-text" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
+			</tr>
+			<tr>
+				<td class="mmpf-form-td">
+					<textarea class="mmpf-form-control" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
 					<p class="description"><?php _e( 'Post excerpt', 'mihdan-mailru-pulse-feed' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th>
+				<th class="mmpf-form-th">
 					<label for="<?php echo esc_attr( $this->slug ); ?>_exclude">
 						<?php _e( 'Exclude', 'mihdan-mailru-pulse-feed' ); ?>
 					</label>
 				</th>
-				<td>
-					<input type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>>
-					<p class="description"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></p>
+			</tr>
+			<tr>
+				<td class="mmpf-form-td">
+					<ul>
+						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_exclude"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+					</ul>
 				</td>
 			</tr>
 			</tbody>
