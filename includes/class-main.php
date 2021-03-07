@@ -252,7 +252,7 @@ class Main {
 		);
 
 		add_filter( 'default_post_metadata', array( $this, 'exclude_post_by_default' ), 10, 3 );
-		add_filter( 'default_post_metadata', array( $this, 'exclude_term_by_default' ), 10, 3 );
+		add_filter( 'default_term_metadata', array( $this, 'exclude_term_by_default' ), 10, 3 );
 
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
