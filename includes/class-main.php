@@ -263,13 +263,13 @@ class Main {
 		add_action( 'edited_category', array( $this, 'save_category_meta_box' ) );
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 		add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
+
 		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'exclude_blocks_from_content' ), 98 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_gallery' ), 98 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
-		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_thumbnail_to_enclosure' ) );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
@@ -535,6 +535,8 @@ class Main {
 	 * @link   https://help.mail.ru/feed/fulltext
 	 */
 	public function wrap_image_with_figure( $content, $post_id ) {
+
+		$this->add_thumbnail_to_enclosure( $post_id );
 
 		try {
 
