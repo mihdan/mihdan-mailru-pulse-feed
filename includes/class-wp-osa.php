@@ -550,7 +550,7 @@ class WP_OSA {
 		$value = esc_textarea( $this->get_option( $args['id'], $args['section'], $args['std'] ) );
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
 
-		$html  = sprintf( '<textarea rows="5" cols="55" class="%1$s-text" id="%2$s[%3$s]" name="%2$s[%3$s]">%4$s</textarea>', $size, $args['section'], $args['id'], $value );
+		$html  = sprintf( '<textarea rows="5" cols="55" class="%1$s-text" id="%2$s[%3$s]" name="%2$s[%3$s]" placeholder="%4$s">%5$s</textarea>', $size, $args['section'], $args['id'], $args['placeholder'], $value );
 		$html .= $this->get_field_description( $args );
 
 		echo $html;
