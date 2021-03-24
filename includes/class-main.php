@@ -87,6 +87,7 @@ class Main {
 		'ul'         => array(),
 		'ol'         => array(),
 		'li'         => array(),
+		'gallery'    => array(),
 	);
 
 	/**
@@ -263,6 +264,8 @@ class Main {
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 		add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
 		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'exclude_blocks_from_content' ), 98 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_gallery' ), 98 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
@@ -484,6 +487,40 @@ class Main {
 	 */
 	private function get_mime_type_from_url( $url ) {
 		return wp_check_filetype( $this->get_basename_for_enclosure_url( $url ) )['type'];
+	}
+
+	/**
+	 * Wrap gallery with fake <gallery> tag.
+	 *
+	 * @param string $content Post content.
+	 *
+	 * @return string
+	 *
+	 * @link https://help.mail.ru/feed/galleries
+	 */
+	public function wrap_gallery( $content ) {
+
+		try {
+			$document = new Document();
+			$document->format();
+			$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+
+			// tgDiv gallery support.
+			$sliders = $document->find( 'div.td-slider' );
+
+			if ( count( $sliders ) > 0 ) {
+				foreach ( $sliders as $slider ) {
+					$gallery = new Element( 'gallery' );
+					$gallery->setInnerHtml( $slider->html() );
+					$slider->parent()->replace( $gallery );
+				}
+			}
+			$content = $document->toElement()->innerHtml();
+		} catch ( Exception $e ) {
+			$content = sprintf( 'Выброшено исключение "%s" в файле %s на строке %s.', $e->getMessage(), $e->getFile(), $e->getLine() );
+		}
+
+		return $content;
 	}
 
 	/**
@@ -898,6 +935,29 @@ class Main {
 	}
 
 	/**
+	 * Exclude blocks from content via RegEx.
+
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public function exclude_blocks_from_content( $content ) {
+
+		$exclude = trim( $this->wposa_obj->get_option( 'exclude', 'content' ) );
+
+		if ( ! $exclude ) {
+			return $content;
+		}
+
+		foreach ( explode( PHP_EOL, $exclude ) as $item ) {
+			$item = trim( $item );
+			$content = preg_replace( '#' . trim( $item ) . '#si', '', $content );
+		}
+
+		return $content;
+	}
+
+	/**
 	 * Filters text content and strips out disallowed HTML.
 	 *
 	 * @param string $content Content with HTML.
@@ -906,7 +966,21 @@ class Main {
 	 */
 	function kses_content( $content ) {
 		if ( is_feed( self::get_feed_name() ) ) {
+			$content = preg_replace( '#<style[^>]*>(.*?)</style>#is', '', $content );
+			$content = preg_replace( '#<script[^>]*>(.*?)</script>#is', '', $content );
+			$content = trim( $content );
 			$content = wp_kses( $content, $this->allowable_tags );
+
+			// Галерея.
+			$search  = array(
+				'<gallery>',
+				'</gallery>',
+			);
+			$replace = array(
+				'<div data-pulse-component="gallery" data-pulse-component-name="pulse_gallery">',
+				'</div>',
+			);
+			$content = str_replace( $search, $replace, $content );
 		}
 
 		return $content;

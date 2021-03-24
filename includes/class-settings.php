@@ -286,6 +286,27 @@ class Settings {
 			)
 		);
 
+		/**
+		 * Content tab.
+		 */
+		$this->wposa_obj->add_section(
+			array(
+				'id'    => 'content',
+				'title' => __( 'Content', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'content',
+			array(
+				'id'      => 'exclude',
+				'type'    => 'textarea',
+				'name'    => __( 'Exclude', 'mihdan-mailru-pulse-feed' ),
+				'desc'    => __( 'Выражения для исключения тегов, блоков, рекламных вставок <br />из содержимого записей. Каждое выражение с новой строки.', 'mihdan-mailru-pulse-feed' ),
+				'placeholder' => __( 'Например, <style[^>]*>(.*?)</style>', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
 		$this->wposa_obj->add_section(
 			array(
 				'id'    => 'widget',
