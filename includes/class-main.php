@@ -268,7 +268,7 @@ class Main {
 		add_action( 'upgrader_process_complete', array( $this, 'upgrade' ), 10, 2 );
 		add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ) );
 
-		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99 );
+		add_filter( 'mihdan_mailru_pulse_feed_item_excerpt', array( $this, 'the_excerpt_rss' ), 99, 2 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_gallery' ), 98 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
@@ -953,8 +953,9 @@ class Main {
 		}
 	}
 
-	function the_excerpt_rss( $excerpt ) {
+	function the_excerpt_rss( $excerpt, $post_id ) {
 		if ( is_feed( self::get_feed_name() ) ) {
+			$this->add_thumbnail_to_enclosure( $post_id );
 			$excerpt = wp_kses( $excerpt, $this->allowable_tags );
 		}
 
