@@ -503,6 +503,8 @@ class Main {
 	 */
 	public function wrap_gallery( $content ) {
 
+		$content = $this->wrap_content_with_valid_html( $content );
+
 		try {
 			$document = new Document();
 			$document->format();
@@ -540,12 +542,26 @@ class Main {
 					$slider->parent()->replace( $gallery );
 				}
 			}
-			$content = $document->toElement()->innerHtml();
+			$content = $document->find( 'body' )[0]->innerHtml();
 		} catch ( Exception $e ) {
 			$content = sprintf( 'Выброшено исключение "%s" в файле %s на строке %s.', $e->getMessage(), $e->getFile(), $e->getLine() );
 		}
 
 		return $content;
+	}
+
+	/**
+	 * Исправляет HTML для старых версий libxml.
+	 *
+	 * @param string $content Исходный HTML;
+	 *
+	 * @return string
+	 */
+	private function wrap_content_with_valid_html( $content ) {
+		return sprintf(
+			'<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>%s</body></html>',
+			wpautop( $content )
+		);
 	}
 
 	/**
@@ -561,6 +577,8 @@ class Main {
 	 */
 	public function wrap_image_with_figure( $content, $post_id ) {
 
+		$content = $this->wrap_content_with_valid_html( $content );
+
 		$this->add_thumbnail_to_enclosure( $post_id );
 
 		try {
@@ -571,6 +589,17 @@ class Main {
 
 			// TODO: Experiment.
 			// $a = $document->xpath( 'video[not(ancestor::figure)]' ); print_r($a);
+
+			/**
+			 * Убираем параграфы из цитат о_О
+			 */
+			$blockquotes = $document->find( 'blockquote' );
+
+			if ( count( $blockquotes ) > 0 ) {
+				foreach ( $blockquotes as $blockquote ) {
+					$blockquote->setInnerHtml( $blockquote->text() );
+				}
+			}
 
 			/**
 			 * Убираем ссылки со всех картинок.
@@ -602,7 +631,7 @@ class Main {
 			if ( count( $nonfigured_images ) > 0 ) {
 				foreach ( $nonfigured_images as $nonfigured_image ) {
 
-					if ( ! $nonfigured_image->tag ) {
+					if ( ! isset( $nonfigured_image->tagName ) ) {
 						continue;
 					}
 
@@ -659,7 +688,7 @@ class Main {
 				}
 			}
 
-			$content = $document->toElement()->innerHtml();
+			$content = $document->find( 'body' )[0]->innerHtml();
 		} catch ( Exception $e ) {
 			$content = sprintf( 'Выброшено исключение "%s" в файле %s на строке %s.', $e->getMessage(), $e->getFile(), $e->getLine() );
 		}
