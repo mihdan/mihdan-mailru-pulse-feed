@@ -302,8 +302,8 @@ class Settings {
 				'id'      => 'exclude',
 				'type'    => 'textarea',
 				'name'    => __( 'Exclude', 'mihdan-mailru-pulse-feed' ),
-				'desc'    => __( 'Выражения для исключения тегов, блоков, рекламных вставок <br />из содержимого записей. Каждое выражение с новой строки.', 'mihdan-mailru-pulse-feed' ),
-				'placeholder' => __( 'Например, <style[^>]*>(.*?)</style>', 'mihdan-mailru-pulse-feed' ),
+				'desc'    => __( 'Выражения <code>xpath</code> для исключения тегов, блоков, рекламных вставок <br />из содержимого записей. Каждое выражение с новой строки.', 'mihdan-mailru-pulse-feed' ),
+				'placeholder' => __( 'Например, //div[contains(@class, \'td-doubleSlider-2\')]', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 

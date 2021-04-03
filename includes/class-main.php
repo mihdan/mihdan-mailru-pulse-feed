@@ -274,10 +274,64 @@ class Main {
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
+		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_categories_to_item' ), 99 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Add categories for given post id.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return void
+	 */
+	public function add_categories_to_item( $post_id ) {
+		$categories = $this->get_categories_for_item( $post_id );
+
+		if ( ! $categories || ! is_array( $categories ) ) {
+			return;
+		}
+
+		foreach ( $categories as $category ) {
+			echo $this->create_category( $category );
+		}
+	}
+
+	/**
+	 * Get categories for given post id.
+	 *
+	 * @param int $post_id Post ID.
+	 *
+	 * @return array
+	 */
+	public function get_categories_for_item( $post_id ) {
+		$taxonomies = $this->wposa_obj->get_option( 'taxonomies', 'feed' );
+		$args = array(
+			'fields'                 => 'names',
+			'update_term_meta_cache' => false,
+		);
+
+		if ( ! $taxonomies ) {
+			return array();
+		}
+
+		$terms = wp_get_object_terms( $post_id, array_values( $taxonomies ), $args );
+		$terms = array_unique( $terms );
+
+		return $terms;
+	}
+
+	/**
+	 * Create category tag
+	 *
+	 * @param string $name Category name.
+	 *
+	 * @return string
+	 */
+	public function create_category( $name ) {
+		return sprintf( '<category>%s</category>', esc_html( $name ) );
 	}
 
 	/**
