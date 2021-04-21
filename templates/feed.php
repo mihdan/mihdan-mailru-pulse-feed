@@ -28,6 +28,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 			<?php the_post(); ?>
 			<item>
 				<link><?php the_permalink_rss(); ?></link>
+				<guid><?php the_guid(); ?></guid>
 				<?php if ( $this->is_amp_support() ) : ?>
 					<amplink><?php $this->the_amp_permalink( get_the_ID() ); ?></amplink>
 				<?php endif; ?>
