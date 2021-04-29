@@ -686,10 +686,6 @@ class Main {
 			if ( count( $nonfigured_images ) > 0 ) {
 				foreach ( $nonfigured_images as $nonfigured_image ) {
 
-					if ( ! isset( $nonfigured_image->tagName ) ) {
-						continue;
-					}
-
 					// Get image URL.
 					$src = $nonfigured_image->getAttribute( 'src' );
 
