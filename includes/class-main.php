@@ -35,6 +35,7 @@ class Main {
 			'cite' => true,
 		),
 		'p'          => array(),
+		'br'         => array(),
 		'em'         => array(),
 		'i'          => array(),
 		'b'          => array(),
@@ -134,17 +135,21 @@ class Main {
 	 */
 	private $defaults = [
 		'feed'   => [
-			'charset'     => 'UTF-8',
-			'orderby'     => 'date',
-			'order'       => 'DESC',
-			'post_types'  => [
+			'charset'                     => 'UTF-8',
+			'orderby'                     => 'date',
+			'order'                       => 'DESC',
+			'post_types'                  => [
 				'post' => 'post',
 			],
-			'taxonomies'  => [
+			'taxonomies'                  => [
 				'category' => 'category',
 			],
-			'total_posts' => 1000,
-			'fulltext'    => 'on',
+			'total_posts'                 => 1000,
+			'fulltext'                    => 'on',
+			'post_thumbnail'              => 'off',
+			'post_thumbnail_size'         => 'large',
+			'delayed_publication_unit'    => 'MINUTE',
+			'delayed_publication_value'   => 0,
 		],
 		'widget' => [
 			'auto_append' => 'off',
@@ -261,6 +266,8 @@ class Main {
 		add_filter( 'default_term_metadata', array( $this, 'exclude_term_by_default' ), 10, 3 );
 
 		add_action( 'pre_get_posts', array( $this, 'alter_query' ) );
+		add_filter( 'posts_where', array( $this, 'delay_posts' ) );
+
 		add_filter( 'plugin_action_links', [ $this, 'add_settings_link' ], 10, 2 );
 		add_action( 'add_meta_boxes', array( $this, 'add_post_meta_box' ) );
 		add_action( 'save_post', array( $this, 'save_post_meta_box' ) );
@@ -404,7 +411,7 @@ class Main {
 			'on' === $this->wposa_obj->get_option( 'post_thumbnail', 'feed' ) &&
 			has_post_thumbnail( $post_id )
 		) {
-			$content = '<figure>' . get_the_post_thumbnail( $post_id, 'full' ) . '</figure>' . $content;
+			$content = '<figure>' . get_the_post_thumbnail( $post_id, $this->wposa_obj->get_option( 'post_thumbnail_size', 'feed' ) ) . '</figure>' . $content;
 		}
 
 		return $content;
@@ -633,7 +640,6 @@ class Main {
 	public function wrap_image_with_figure( $content, $post_id ) {
 
 		$content = $this->wrap_content_with_valid_html( $content );
-
 		$this->add_thumbnail_to_enclosure( $post_id );
 
 		try {
@@ -641,9 +647,6 @@ class Main {
 			$document = new Document();
 			$document->format();
 			$document->loadHtml( $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
-
-			// TODO: Experiment.
-			// $a = $document->xpath( 'video[not(ancestor::figure)]' ); print_r($a);
 
 			/**
 			 * Убираем параграфы из цитат о_О
@@ -660,7 +663,7 @@ class Main {
 			 * Убираем ссылки со всех картинок.
 			 * a>img -> img
 			 */
-			$anchored_images = $document->find( 'a > img' );
+			/*$anchored_images = $document->find( 'a > img' );
 
 			if ( count( $anchored_images ) > 0 ) {
 				foreach ( $anchored_images as $anchored_image ) {
@@ -673,9 +676,11 @@ class Main {
 
 					$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
 
-					$anchored_image->parent()->replace( $anchored_image );
+					$parent = $anchored_image->innerHtml();
+					print_r($parent);
+					$parent->replace( $anchored_image );
 				}
-			}
+			} return;*/
 
 			/**
 			 * Оборачиваем все картинки в <figure>.
@@ -789,7 +794,7 @@ class Main {
 	 * @return string
 	 */
 	public function get_amp_permalink( $post_id ) {
-		return $this->amp_data[ $this->amp_provider ]( $post_id );
+		return user_trailingslashit( $this->amp_data[ $this->amp_provider ]( $post_id ) );
 	}
 
 	/**
@@ -973,6 +978,38 @@ class Main {
 	}
 
 	/**
+	 * Возможность отложить публикацию постов на указанное время.
+	 *
+	 * @param string $where Строка поиска по умолчанию.
+	 *
+	 * @return string
+	 */
+	public function delay_posts( $where ) {
+		global $wpdb;
+
+		if ( ! is_feed( self::get_feed_name() ) ) {
+			return $where;
+		}
+
+		// Возможность отложить публикацию всех постов в ленте.
+		$unit  = $this->wposa_obj->get_option( 'delayed_publication_unit', 'feed', 0 );
+		$value = $this->wposa_obj->get_option( 'delayed_publication_value', 'feed', 0 );
+
+		if ( $value > 0 ) {
+			$now = gmdate( 'Y-m-d H:i:s' );
+			$where .= sprintf(
+				" AND TIMESTAMPDIFF( %s, %s.post_date_gmt, '%s') > %d ",
+				$unit,
+				$wpdb->posts,
+				$now,
+				$value
+			);
+		}
+
+		return $where;
+	}
+
+	/**
 	 * Подправляем основной луп фида
 	 *
 	 * @param \WP_Query $wp_query объект запроса
@@ -1143,15 +1180,11 @@ class Main {
 	 */
 	public function hide_wpseo_rss_footer( $include_footer ) {
 
-		if ( is_feed( self::get_feed_name() ) ) {
-			if ( 'on' === $this->wposa_obj->get_option( 'yoast_seo_footer', 'feed' ) ) {
-				$include_footer = true;
-			} else {
-				$include_footer = false;
-			}
+		if ( ! is_feed( self::get_feed_name() ) ) {
+			return $include_footer;
 		}
 
-		return $include_footer;
+		return false;
 	}
 
 	public function send_headers_for_aio_seo_pack() {

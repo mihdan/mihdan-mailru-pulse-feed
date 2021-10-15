@@ -194,7 +194,7 @@ class WP_OSA {
 		foreach ( $this->sections_array as $section ) {
 			if ( false == get_option( $section['id'] ) ) {
 				// Add a new field as section ID.
-				add_option( $section['id'] );
+				//add_option( $section['id'] );
 			}
 
 			// Deals with sections description.

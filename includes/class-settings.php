@@ -51,6 +51,21 @@ class Settings {
 	}
 
 	/**
+	 * Get all registered image sizes.
+	 *
+	 * @return array
+	 */
+	public function get_registered_image_sizes() {
+		$sizes = [];
+
+		foreach ( wp_get_registered_image_subsizes() as $key => $data ) {
+			$sizes[ $key ] = $key;
+		}
+
+		return $sizes;
+	}
+
+	/**
 	 * Hooks init.
 	 */
 	public function hooks() {
@@ -65,6 +80,18 @@ class Settings {
 		wp_enqueue_script( 'plugin_install' );
 		wp_enqueue_script( 'updates' );
 		add_thickbox();
+	}
+
+	/**
+	 * Форматирует строку с минутами или часами или днями,
+	 * добавляя ведущие нули.
+	 *
+	 * @param string $str Входная строка.
+	 *
+	 * @return string
+	 */
+	public function format_date( $str ) {
+		return sprintf( '%02d', $str );
 	}
 
 	public function install_plugins_nonmenu_tabs( $tabs ) {
@@ -170,6 +197,34 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
+				'id'      => 'delayed_publication_unit',
+				'type'    => 'select',
+				'name'    => __( 'Delay Publication: Unit', 'mihdan-mailru-pulse-feed' ),
+				'options' => array(
+					'MINUTE' => __( 'Minutes', 'mihdan-mailru-pulse-feed' ),
+					'HOUR'   => __( 'Hours', 'mihdan-mailru-pulse-feed' ),
+					'DAY'    => __( 'Days', 'mihdan-mailru-pulse-feed' ),
+					'WEEK'   => __( 'Week', 'mihdan-mailru-pulse-feed' ),
+					'MONTH'  => __( 'Month', 'mihdan-mailru-pulse-feed' ),
+					'YEAR'   => __( 'Year', 'mihdan-mailru-pulse-feed' ),
+				),
+				'default' => 'MINUTE',
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'      => 'delayed_publication_value',
+				'type'    => 'number',
+				'name'    => __( 'Delay Publication: Value', 'mihdan-mailru-pulse-feed' ),
+				'default' => 0,
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
 				'id'                => 'total_posts',
 				'type'              => 'number',
 				'name'              => __( 'Total Posts', 'mihdan-mailru-pulse-feed' ),
@@ -192,20 +247,22 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'yoast_seo_footer',
+				'id'   => 'post_thumbnail',
 				'type' => 'checkbox',
-				'name' => __( 'Yoast SEO Footer', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Enable Yoast SEO Footer', 'mihdan-mailru-pulse-feed' ),
+				'name' => __( 'Post thumbnail', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'post_thumbnail',
-				'type' => 'checkbox',
-				'name' => __( 'Post thumbnail', 'mihdan-mailru-pulse-feed' ),
+				'id'   => 'post_thumbnail_size',
+				'type' => 'select',
+				'name' => __( 'Post thumbnail size', 'mihdan-mailru-pulse-feed' ),
 				'desc' => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
+				'options' => $this->get_registered_image_sizes(),
+				'default' => 'large',
 			)
 		);
 
