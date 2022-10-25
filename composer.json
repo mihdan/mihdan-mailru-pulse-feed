@@ -38,11 +38,11 @@
     }
   ],
   "require": {
-    "composer/installers": "^2.2",
+    "composer/installers": "^1.12",
     "wptrt/admin-notices": "^1.0",
     "ext-dom": "*",
     "ext-libxml": "*",
-    "imangazaliev/didom": "^2.0"
+    "imangazaliev/didom": "^1.18"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
