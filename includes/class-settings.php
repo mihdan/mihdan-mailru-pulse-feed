@@ -273,6 +273,10 @@ class Settings {
 			)
 		);
 
+		$feed_url = ( get_option( 'permalink_structure', '' ) === '' )
+			? add_query_arg( [ 'feed' => Main::get_feed_name() ], home_url( '/' ) )
+			: home_url( '/feed/' . Main::get_feed_name() );
+
 		$this->wposa_obj->add_field(
 			'source',
 			array(
@@ -281,9 +285,8 @@ class Settings {
 				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
 				'desc' => sprintf(
 					/* translators: URL to feed */
-					__( 'Your feed is available by url <a href="%1$s/feed/%2$s/" target="_blank">%1$s/feed/%2$s/</a>.', 'mihdan-mailru-pulse-feed' ),
-					get_home_url(),
-					Main::get_feed_name()
+					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>', 'mihdan-mailru-pulse-feed' ),
+					$feed_url
 				),
 			)
 		);
@@ -454,7 +457,7 @@ class Settings {
 				'id'   => 'help',
 				'type' => 'html',
 				'name' => __( 'Помощь', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Нужна помощь?<br />По всем вопросам пишите в телеграм <a href="https://t.me/mihdan" target="_blank">@mihdan</a>.', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Нужна помощь?<br />По всем вопросам пишите в наш <a href="https://t.me/+uNVaYXy1H3wyYTEy" target="_blank">Telegram</a>.', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 
