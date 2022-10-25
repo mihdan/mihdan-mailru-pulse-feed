@@ -287,6 +287,35 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+
+		add_filter( 'render_block_core/gallery', array( $this, 'set_template_for_gallery_block' ), 10, 2 );
+	}
+
+	public function set_template_for_gallery_block( $block_content, $parsed_block ) {
+		// Парсим только при формировании ленты.
+		if ( ! is_feed( self::get_feed_name() ) ) {
+			return $block_content;
+		}
+
+		if ( ! isset( $parsed_block['attrs']['ids'] ) ) {
+			return $block_content;
+		}
+
+		$template = sprintf( '<gallery data-pulse-component="gallery" data-pulse-component-name="pulse_gallery_%s">',  $this->get_unique_string() );
+
+		foreach ( $parsed_block['attrs']['ids'] as $image ) {
+			$src = wp_get_attachment_image_url( $image, 'large' );
+
+			if ( ! $src ) {
+				continue;
+			}
+
+			$template .= sprintf( '<figure><img src="%s"></figure>', $src );
+		}
+
+		$template .= '</gallery>';
+
+		return $template;
 	}
 
 	/**
@@ -622,7 +651,7 @@ class Main {
 	private function wrap_content_with_valid_html( $content ) {
 		return sprintf(
 			'<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>%s</body></html>',
-			wpautop( $content )
+			$content
 		);
 	}
 
@@ -659,28 +688,25 @@ class Main {
 				}
 			}
 
-			/**
-			 * Убираем ссылки со всех картинок.
-			 * a>img -> img
-			 */
-			/*$anchored_images = $document->find( 'a > img' );
-
-			if ( count( $anchored_images ) > 0 ) {
-				foreach ( $anchored_images as $anchored_image ) {
-					// Get image URL.
-					$src = $anchored_image->getAttribute( 'src' );
-
-					if ( ! $src ) {
-						continue;
-					}
-
-					$this->set_enclosure( $post_id, $src, $this->get_mime_type_from_url( $src ) );
-
-					$parent = $anchored_image->innerHtml();
-					print_r($parent);
-					$parent->replace( $anchored_image );
-				}
-			} return;*/
+//			/**
+//			 * Убираем ссылки со всех картинок.
+//			 * a>img -> img
+//			 */
+//			$anchored_images = $document->find( 'a > img_____' );
+//
+//			if ( count( $anchored_images ) > 0 ) {
+//				foreach ( $anchored_images as $anchored_image ) {
+//					// Get image URL.
+//					$src = $anchored_image->getAttribute( 'src' );
+//
+//					if ( ! $src ) {
+//						continue;
+//					}
+//
+//					$parent = $anchored_image->parent();
+//					$parent->replace( $anchored_image );
+//				}
+//			}
 
 			/**
 			 * Оборачиваем все картинки в <figure>.
