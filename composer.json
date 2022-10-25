@@ -1,6 +1,6 @@
 {
   "name": "mihdan/mihdan-mailru-pulse-feed",
-  "description": "mihdan-mailru-pulse-feedt",
+  "description": "Плагин, формирует ленту для рекомендательной системы Пульс от компании Mail.ru",
   "license": "GPL-2.0",
   "keywords": [
     "cyrillic, georgian, latin, l10n, russian, rustolat, slugs, translations, transliteration"
@@ -33,7 +33,7 @@
     "imangazaliev/didom": "*"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-master",
+    "roave/security-advisories": "dev-latest",
     "squizlabs/php_codesniffer": "^2.9",
     "phpcompatibility/php-compatibility": "^9.0",
     "wp-coding-standards/wpcs": "^1.2",
