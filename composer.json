@@ -1,9 +1,13 @@
 {
   "name": "mihdan/mihdan-mailru-pulse-feed",
   "description": "Плагин, формирует ленту для рекомендательной системы Пульс от компании Mail.ru",
-  "license": "GPL-2.0",
+  "license": "GPL-2.0-or-later",
   "keywords": [
-    "cyrillic, georgian, latin, l10n, russian, rustolat, slugs, translations, transliteration"
+    "mailru",
+    "feed",
+    "mihdan",
+    "mail.ru",
+    "russian"
   ],
   "homepage": "https://github.com/mihdan/mihdan-mailru-pulse-feed",
   "type": "wordpress-plugin",
@@ -19,6 +23,14 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "config": {
+    "platform": {
+      "php": "5.6"
+    },
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  },
   "repositories": [
     {
       "type":"composer",
@@ -26,11 +38,11 @@
     }
   ],
   "require": {
-    "composer/installers": "*",
+    "composer/installers": "^2.2",
     "wptrt/admin-notices": "^1.0",
     "ext-dom": "*",
     "ext-libxml": "*",
-    "imangazaliev/didom": "*"
+    "imangazaliev/didom": "^2.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
