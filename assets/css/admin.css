@@ -11,3 +11,6 @@
 	padding-top: 0 !important;
 	padding-bottom: 10px !important;
 }
+#mmpf_plugins .form-table > tbody > tr > th {
+	display: none;
+}
