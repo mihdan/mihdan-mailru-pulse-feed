@@ -10,6 +10,10 @@ namespace Mihdan\MailRuPulseFeed;
 use DiDom\Document;
 use DiDom\Element;
 use DiDom\Query;
+use WP_Post;
+use WP_Query;
+use WP_Term;
+use WP_Upgrader;
 use WPTRT\AdminNotices\Notices;
 use Exception;
 
@@ -230,6 +234,8 @@ class Main {
 		$this->settings      = new Settings( $this->wposa_obj );
 		$this->widget        = new Widget( $this->wposa_obj );
 
+		( new Gutenberg() )->init();
+
 		$this->post_type   = $this->wposa_obj->get_option( 'post_types', 'feed' );
 		$this->total_posts = $this->wposa_obj->get_option( 'total_posts', 'feed', 10 );
 
@@ -285,37 +291,29 @@ class Main {
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_categories_to_item' ), 99 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
+		/**
+		 * Поддержка плагинов.
+		 */
+		// Отключить генерацию тега <picture> в плагине Imagify для нашей ленты.
+		add_filter( 'imagify_allow_picture_tags_for_webp', [ $this, 'imagify_disable_picture_tag' ] );
+
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
-
-		add_filter( 'render_block_core/gallery', array( $this, 'set_template_for_gallery_block' ), 10, 2 );
 	}
 
-	public function set_template_for_gallery_block( $block_content, $parsed_block ) {
-		// Парсим только при формировании ленты.
-		if ( ! is_feed( self::get_feed_name() ) ) {
-			return $block_content;
+	/**
+	 * Отключает генерацию тега <picture> в плагине Imagify для нашей ленты.
+	 *
+	 * @param bool $allow Разрешить генерацию или нет.
+	 *
+	 * @return bool
+	 */
+	public function imagify_disable_picture_tag( bool $allow ): bool {
+		if ( is_feed( self::get_feed_name() ) ) {
+			return false;
 		}
 
-		if ( ! isset( $parsed_block['attrs']['ids'] ) ) {
-			return $block_content;
-		}
-
-		$template = sprintf( '<gallery data-pulse-component="gallery" data-pulse-component-name="pulse_gallery_%s">',  $this->get_unique_string() );
-
-		foreach ( $parsed_block['attrs']['ids'] as $image ) {
-			$src = wp_get_attachment_image_url( $image, 'large' );
-
-			if ( ! $src ) {
-				continue;
-			}
-
-			$template .= sprintf( '<figure><img src="%s"></figure>', $src );
-		}
-
-		$template .= '</gallery>';
-
-		return $template;
+		return $allow;
 	}
 
 	/**
@@ -628,7 +626,7 @@ class Main {
 				foreach ( $sliders as $slider ) {
 					$gallery = new Element( 'gallery' );
 					$gallery->setAttribute( 'data-pulse-component', 'gallery' );
-					$gallery->setAttribute( 'data-pulse-component-name', 'pulse_gallery_' . $this->get_unique_string() );
+					$gallery->setAttribute( 'data-pulse-component-name', 'pulse_gallery_' . self::get_unique_string() );
 					$gallery->setInnerHtml( $slider->html() );
 					$slider->parent()->replace( $gallery );
 				}
@@ -688,25 +686,28 @@ class Main {
 				}
 			}
 
-//			/**
-//			 * Убираем ссылки со всех картинок.
-//			 * a>img -> img
-//			 */
-//			$anchored_images = $document->find( 'a > img_____' );
-//
-//			if ( count( $anchored_images ) > 0 ) {
-//				foreach ( $anchored_images as $anchored_image ) {
-//					// Get image URL.
-//					$src = $anchored_image->getAttribute( 'src' );
-//
-//					if ( ! $src ) {
-//						continue;
-//					}
-//
-//					$parent = $anchored_image->parent();
-//					$parent->replace( $anchored_image );
-//				}
-//			}
+			/**
+			 * Убираем ссылки со всех картинок.
+			 * a > img -> img
+			 */
+			$anchored_images = $document->find( 'a > img' );
+
+			if ( count( $anchored_images ) > 0 ) {
+				foreach ( $anchored_images as $anchored_image ) {
+					// Get image URL.
+					$src = $anchored_image->getAttribute( 'src' );
+
+					if ( ! $src ) {
+						continue;
+					}
+
+					$parent = $anchored_image->parent();
+
+					if ( $parent instanceof Element ) {
+						$parent->replace( $anchored_image );
+					}
+				}
+			}
 
 			/**
 			 * Оборачиваем все картинки в <figure>.
@@ -728,7 +729,12 @@ class Main {
 
 					$figure = new Element( 'figure' );
 					$figure->setInnerHtml( $nonfigured_image->html() );
-					$nonfigured_image->parent()->replace( $figure );
+
+					$parent = $nonfigured_image->parent();
+
+					if ( $parent instanceof Element ) {
+						$parent->replace( $figure );
+					}
 				}
 			}
 
@@ -742,14 +748,18 @@ class Main {
 				foreach ( $nonfigured_frames as $nonfigured_frame ) {
 					$figure = new Element( 'figure' );
 					$figure->setInnerHtml( $nonfigured_frame->html() );
-					$nonfigured_frame->parent()->replace( $figure );
+
+					$parent = $nonfigured_frame->parent();
+
+					if ( $parent instanceof Element ) {
+						$parent->replace( $figure );
+					}
 				}
 			}
 
 			/**
 			 * Оборачиваем все <video> в <figure>,
 			 * если они еще не обернуты. Gutenberg сам оборачивает.
-			 *
 			 * video -> figure>video
 			 * figure>video -> figure>video
 			 */
@@ -759,7 +769,7 @@ class Main {
 				foreach ( $videos as $video ) {
 					$parent = $video->parentNode;
 
-					// Пропустить видео, если оно уже обернуто в <figure>
+					// Пропустить видео, если оно уже обернуто в <figure>.
 					if ( 'figure' === $parent->tagName ) {
 						continue;
 					}
@@ -781,10 +791,10 @@ class Main {
 	/**
 	 * Set plugin version.
 	 *
-	 * @param \WP_Upgrader $upgrader WP_Upgrader instance.
-	 * @param array        $options  Array of bulk item update data.
+	 * @param WP_Upgrader $upgrader WP_Upgrader instance.
+	 * @param array       $options  Array of bulk item update data.
 	 */
-	public function upgrade( \WP_Upgrader $upgrader, $options ) {
+	public function upgrade( WP_Upgrader $upgrader, $options ) {
 		$our_plugin = plugin_basename( MIHDAN_MAILRU_PULSE_FEED_FILE );
 
 		if ( 'update' === $options['action'] && 'plugin' === $options['type'] && isset( $options['plugins'] ) ) {
@@ -815,7 +825,7 @@ class Main {
 	/**
 	 * Get AMP permalink for post.
 	 *
-	 * @param int $post_id
+	 * @param int $post_id Post ID.
 	 *
 	 * @return string
 	 */
@@ -826,7 +836,7 @@ class Main {
 	/**
 	 * Display AMP permalink for post.
 	 *
-	 * @param int $post_id
+	 * @param int $post_id Post ID.
 	 */
 	public function the_amp_permalink( $post_id ) {
 		echo $this->get_amp_permalink( $post_id );
@@ -835,9 +845,9 @@ class Main {
 	/**
 	 * Add settings Meta Box for categories.
 	 *
-	 * @param \WP_Term $term Current taxonomy term object
+	 * @param WP_Term $term Current taxonomy term object
 	 */
-	public function add_category_meta_box( \WP_Term $term ) {
+	public function add_category_meta_box( WP_Term $term ) {
 		$exclude = (bool) get_term_meta( $term->term_id, $this->slug . '_exclude', true );
 		?>
 		<h2><?php _e( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ); ?></h2>
@@ -888,7 +898,7 @@ class Main {
 	/**
 	 * Render settings Meta Box for posts.
 	 *
-	 * @param \WP_Post $post Post object.
+	 * @param WP_Post $post Post object.
 	 */
 	public function render_meta_box( $post ) {
 		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
@@ -1038,9 +1048,9 @@ class Main {
 	/**
 	 * Подправляем основной луп фида
 	 *
-	 * @param \WP_Query $wp_query объект запроса
+	 * @param WP_Query $wp_query объект запроса
 	 */
-	public function alter_query( \WP_Query $wp_query ) {
+	public function alter_query( WP_Query $wp_query ) {
 		if ( $wp_query->is_main_query() && $wp_query->is_feed( self::get_feed_name() ) ) {
 			// Ограничить посты 50-ю
 			$wp_query->set( 'posts_per_rss', $this->total_posts );
@@ -1063,14 +1073,14 @@ class Main {
 				'compare' => 'NOT EXISTS',
 			);
 
-			// Исключаем записи с галочкой в админке
+			// Исключаем записи с галочкой в админке.
 			$wp_query->set( 'meta_query', $meta_query );
 
 			// Ищем категории, которые исключены из ленты.
 			$args = [
 				'taxonomy'   => 'category',
 				'fields'     => 'ids',
-				'meta_query' => [
+				'meta_query' => [ //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					[
 						'key'     => $this->slug . '_exclude',
 						'compare' => 'EXISTS',
@@ -1134,8 +1144,8 @@ class Main {
 		return $content;
 	}
 
-	public function get_unique_string() {
-		return str_replace( '.', '',  microtime( true ) ) . mt_rand( 1000, 9999 );
+	public static function get_unique_string() {
+		return str_replace( '.', '', microtime( true ) ) . wp_rand( 1000, 9999 );
 	}
 
 	public static function get_feed_name() {
@@ -1200,7 +1210,7 @@ class Main {
 	/**
 	 * Show/Hide Yoast SEO Footer.
 	 *
-	 * @param bool $include_footer
+	 * @param bool $include_footer Allow footer.
 	 *
 	 * @return bool
 	 */
@@ -1231,9 +1241,11 @@ class Main {
 			return;
 		}
 
-		$instance = the_seo_framework();
-		remove_filter( 'the_content_feed', [ $instance, 'the_content_feed' ] );
-		remove_filter( 'the_excerpt_rss', [ $instance, 'the_content_feed' ] );
+		if ( function_exists( 'the_seo_framework' ) ) {
+			$instance = the_seo_framework();
+			remove_filter( 'the_content_feed', [ $instance, 'the_content_feed' ] );
+			remove_filter( 'the_excerpt_rss', [ $instance, 'the_content_feed' ] );
+		}
 	}
 
 	public function on_activate() {
@@ -1258,9 +1270,7 @@ class Main {
 
 	public function on_deactivate() {
 
-		// Сбросить правила реврайтов
+		// Сбросить правила реврайтов.
 		flush_rewrite_rules();
 	}
 }
-
-// eof;
