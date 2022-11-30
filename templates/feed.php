@@ -1,12 +1,15 @@
 <?php
 /**
- * @var \Mihdan\MailRuPulseFeed\Main $this
+ * Шаблон вывода RSS ленты.
+ *
+ * @var Main $this
+ * @package mihdan-mailru-pulse-feed
  */
 
-use Mihdan\MailRuPulseFeed\Main as Main;
+use Mihdan\MailRuPulseFeed\Main;
 
 header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=' . $this->wposa_obj->get_option( 'charset', 'feed' ), true );
-echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset', 'feed' ) . '"?' . '>';
+echo '<?xml version="1.0" encoding="' . esc_attr( $this->wposa_obj->get_option( 'charset', 'feed' ) ) . '"?' . '>';
 ?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 	<channel>
@@ -37,7 +40,7 @@ echo '<?xml version="1.0" encoding="' . $this->wposa_obj->get_option( 'charset',
 				<pubDate><?php echo esc_html( get_post_time( 'r', true ) ); ?></pubDate>
 				<description><![CDATA[<?php echo esc_html( $this->get_post_excerpt( get_the_ID() ) ); ?>]]></description>
 				<?php if ( 'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) ) : ?>
-					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() ); ?>]]></content:encoded>
+					<content:encoded><![CDATA[<?php echo apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>]]></content:encoded>
 				<?php endif; ?>
 				<?php do_action( 'mihdan_mailru_pulse_feed_item', get_the_ID() ); ?>
 			</item>
