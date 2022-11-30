@@ -915,10 +915,6 @@ class WP_OSA {
 			.group .form-table input.color-picker {
 				max-width: 100px;
 			}
-			#mmpf_plugins .form-table > tr > th,
-			#mmpf_plugins .form-table > tbody > tr > th {
-				display: none;
-			}
 		</style>
 		<?php
 	}
