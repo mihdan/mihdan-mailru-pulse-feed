@@ -2,11 +2,22 @@
 <ruleset name="WordPress Plugin Coding Standards">
     <description>A custom set of code standard rules to check for WordPress plugins.</description>
 
+	<rule ref="PHPCompatibility"/>
+	<rule ref="PHPCompatibilityWP"/>
     <rule ref="WordPress" />
-    <!-- https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/wiki/Customizable-sniff-properties -->
 
+	<rule ref="WordPress.NamingConventions.ValidHookName">
+		<properties>
+			<property name="additionalWordDelimiters" value="/" />
+		</properties>
+	</rule>
+
+	<file>.</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/\.github/*</exclude-pattern>
+	<exclude-pattern>*/\.wordpress-org/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
     <exclude-pattern>*.js</exclude-pattern>
     <exclude-pattern>*.mo</exclude-pattern>
     <exclude-pattern>*.po</exclude-pattern>
@@ -14,4 +25,12 @@
     <exclude-pattern>*.css</exclude-pattern>
     <exclude-pattern>*.scss</exclude-pattern>
 
+	<config name="installed_paths" value="vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-paragonie,vendor/phpcompatibility/phpcompatibility-wp,vendor/wp-coding-standards/wpcs"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<arg name="cache" value=".phpcs.cache"/>
+	<arg name="parallel" value="12"/>
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="./"/>
+	<arg value="sp"/>
 </ruleset>
