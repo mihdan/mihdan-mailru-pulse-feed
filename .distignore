@@ -24,6 +24,7 @@ multisite.xml.dist
 phpcs.xml
 phpcs.ruleset.xml
 phpcs.xml.dist
+psalm.xml
 README.md
 CHANGELOG.md
 CONTRIBUTING.md
