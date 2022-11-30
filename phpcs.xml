@@ -4,7 +4,10 @@
 
 	<rule ref="PHPCompatibility"/>
 	<rule ref="PHPCompatibilityWP"/>
-    <rule ref="WordPress" />
+    <rule ref="WordPress">
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
+		<exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
+	</rule>
 
 	<rule ref="WordPress.NamingConventions.ValidHookName">
 		<properties>
