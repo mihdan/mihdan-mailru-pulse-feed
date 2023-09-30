@@ -210,7 +210,7 @@ class Main {
 			$this->notifications->add(
 				'dom_document_error',
 				false,
-				__( 'Для правильной работы плагина <strong>Mail.ru Pulse Feed</strong> необходимо расширение <strong>DOMDocument</strong>. Обратитесь в техподдержку вашего хостинга или к вашему системному администратору.', 'mihdan-mailru-pulse-feed' ),
+				__( 'Для правильной работы плагина <strong>Zen Feed</strong> необходимо расширение <strong>DOMDocument</strong>. Обратитесь в техподдержку вашего хостинга или к вашему системному администратору.', 'mihdan-mailru-pulse-feed' ),
 				[
 					'scope'         => 'user',
 					'option_prefix' => $this->slug,
@@ -297,8 +297,27 @@ class Main {
 		// Отключить генерацию тега <picture> в плагине Imagify для нашей ленты.
 		add_filter( 'imagify_allow_picture_tags_for_webp', [ $this, 'imagify_disable_picture_tag' ] );
 
+		add_action( 'wp_head', [ $this, 'add_verification_code' ] );
+
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Добавляет специальный метатег в код всех страниц
+	 * для верификации вашего сайта в Дзен.
+	 *
+	 * @return void
+	 */
+	public function add_verification_code(): void {
+		$code = $this->wposa_obj->get_option( 'zen_verification', 'source' );
+
+		if ( empty( $code ) ) {
+			return;
+		}
+		?>
+		<meta name="zen-verification" content="<?php echo esc_attr( $code ); ?>" />
+		<?php
 	}
 
 	/**
@@ -461,7 +480,7 @@ class Main {
 
 		if ( isset( $current_screen ) && in_array( $current_screen->id, $white_list ) ) {
 			$text = '<span class="mytf-admin-footer-text">';
-			$text .= sprintf( __( 'Enjoyed <strong>Mail.ru Pulse Feed</strong>? Please leave us a <a href="%s" target="_blank" title="Rate & review it">★★★★★</a> rating. We really appreciate your support', 'mihdan-yandex-turbo-feed' ), 'https://wordpress.org/support/plugin/mihdan-mailru-pulse-feed/reviews/#new-post' );
+			$text .= sprintf( __( 'Enjoyed <strong>Zen Feed</strong>? Please leave us a <a href="%s" target="_blank" title="Rate & review it">★★★★★</a> rating. We really appreciate your support', 'mihdan-yandex-turbo-feed' ), 'https://wordpress.org/support/plugin/mihdan-mailru-pulse-feed/reviews/#new-post' );
 			$text .= '</span>';
 		}
 
@@ -850,7 +869,7 @@ class Main {
 	public function add_category_meta_box( WP_Term $term ) {
 		$exclude = (bool) get_term_meta( $term->term_id, $this->slug . '_exclude', true );
 		?>
-		<h2><?php _e( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ); ?></h2>
+		<h2><?php _e( 'Zen Feed', 'mihdan-mailru-pulse-feed' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr class="form-field">
 				<th scope="row">
@@ -887,7 +906,7 @@ class Main {
 	public function add_post_meta_box() {
 		add_meta_box(
 			$this->slug,
-			__( 'Pulse Mail.ru', 'mihdan-mailru-pulse-feed' ),
+			__( 'Zen Feed', 'mihdan-mailru-pulse-feed' ),
 			[ $this, 'render_meta_box' ],
 			$this->post_type,
 			'side',

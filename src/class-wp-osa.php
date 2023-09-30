@@ -719,20 +719,33 @@ class WP_OSA {
 	public function admin_menu() {
 		// add_options_page( $page_title, $menu_title, $capability, $menu_slug, array( $this, $callable ) );
 		add_options_page(
-			'Mail.ru Pulse Feed',
-			'Mail.ru Pulse Feed',
+			'Zen Feed',
+			'Zen Feed',
 			'manage_options',
 			str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG ),
 			array( $this, 'plugin_page' )
 		);
 	}
 
-	public function plugin_page() {
-		echo '<div class="wrap">';
-		echo '<h1>Mail.ru Pulse Feed <span style="font-size:50%;">v' . MIHDAN_MAILRU_PULSE_FEED_VERSION . '</span></h1>';
-		$this->show_navigation();
-		$this->show_forms();
-		echo '</div>';
+	/**
+	 * Выводит страницу настроек.
+	 *
+	 * @return void
+	 */
+	public function plugin_page(): void {
+		?>
+		<div class="wrap">
+			<h1>Zen Feed <span style="font-size:50%;">v <?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></span></h1>
+			<div class="welcome-panel">
+				<div class="welcome-panel-content" style="max-width: 700px">
+					<h2>Внимание!</h2>
+					<p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>
+				</div>
+			</div>
+			<?php echo $this->show_navigation(); ?>
+			<?php echo $this->show_forms(); ?>
+		</div>
+		<?php
 	}
 
 	/**

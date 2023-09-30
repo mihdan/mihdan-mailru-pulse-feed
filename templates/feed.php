@@ -17,7 +17,7 @@ echo '<?xml version="1.0" encoding="' . esc_attr( $this->wposa_obj->get_option( 
 		<link><?php echo esc_url( $this->wposa_obj->get_option( 'link', 'source' ) ); ?></link>
 		<description><?php echo esc_html( $this->wposa_obj->get_option( 'description', 'source' ) ); ?></description>
 		<language><?php echo esc_html( $this->wposa_obj->get_option( 'language', 'source' ) ); ?></language>
-		<generator>Mail.ru Pulse Feed by mihdan, v<?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></generator>
+		<generator>Zen Feed by mihdan, v<?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></generator>
 		<webMaster>mikhail@kobzarev.com (Mikhail Kobzarev)</webMaster>
 		<docs>https://ru.wordpress.org/plugins/mihdan-mailru-pulse-feed/</docs>
 		<image>

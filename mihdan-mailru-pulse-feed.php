@@ -1,16 +1,16 @@
 <?php
 /**
- * Mihdan: Mail.ru Pulse Feed
+ * Mihdan: Zen Feed
  *
- * Plugin Name: Mail.ru Pulse Feed
+ * Plugin Name: Zen Feed
  * Plugin URI: https://wordpress.org/plugins/mihdan-mailru-pulse-feed/
- * Description: Плагин, формирует ленту для новой рекомендательной системы Пульс от компании Mail.ru. Пульс создает персонализованный контент на базе технологий машинного обучения.
+ * Description: Плагин формирует RSS-ленту (фид) для платформы Дзен, которая создана для просмотра и создания контента.
  * Author: Mikhail Kobzarev
  * Author URI: https://www.kobzarev.com/
  * Requires at least: 5.3
- * Tested up to: 6.1
- * Version: 0.6.0
- * Stable tag: 0.6.0
+ * Tested up to: 6.3
+ * Version: 0.7.0
+ * Stable tag: 0.7.0
  *
  * Text Domain: mihdan-mailru-pulse-feed
  * Domain Path: /languages/
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const MIHDAN_MAILRU_PULSE_FEED_VERSION = '0.6.0';
+const MIHDAN_MAILRU_PULSE_FEED_VERSION = '0.7.0';
 const MIHDAN_MAILRU_PULSE_FEED_PATH    = __DIR__;
 const MIHDAN_MAILRU_PULSE_FEED_FILE    = __FILE__;
 const MIHDAN_MAILRU_PULSE_FEED_SLUG    = 'mihdan-mailru-pulse-feed';

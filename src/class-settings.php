@@ -115,8 +115,101 @@ class Settings {
 	public function fields() {
 		$this->wposa_obj->add_section(
 			array(
+				'id'    => 'source',
+				'title' => __( 'Source', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'   => 'zen_verification',
+				'type' => 'text',
+				'name' => __( 'Zen verification', 'mihdan-mailru-pulse-feed' ),
+				'desc' => __( 'Добавляет тег <code>&lt;meta name="zen-verification"&gt;</code> <br />в код страницы для верификации вашего сайта в Дзене.', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'title',
+				'type'    => 'text',
+				'name'    => __( 'Title', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'name' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'link',
+				'type'    => 'text',
+				'name'    => __( 'Link', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'url' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'description',
+				'type'    => 'textarea',
+				'name'    => __( 'Description', 'mihdan-mailru-pulse-feed' ),
+				'default' => get_bloginfo_rss( 'description' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'language',
+				'type'    => 'select',
+				'name'    => __( 'Language', 'mihdan-mailru-pulse-feed' ),
+				'options' => array(
+					'ru' => __( 'Russian', 'mihdan-mailru-pulse-feed' ),
+					'en' => __( 'English', 'mihdan-mailru-pulse-feed' ),
+				),
+				'default' => 'ru',
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'source',
+			array(
+				'id'      => 'image',
+				'type'    => 'image',
+				'name'    => __( 'Image', 'mihdan-mailru-pulse-feed' ),
+				'desc'    => __( 'Размер картинки должен быть не менее 200 пикселей по ширине и высоте.<br />Изображение будет кадрировано до квадратного.<br />Не допускается анимация и прозрачный фон.', 'mihdan-mailru-pulse-feed' ),
+				'default' => admin_url( 'images/w-logo-blue.png' ),
+			)
+		);
+
+		/**
+		 * Feed tab.
+		 */
+		$this->wposa_obj->add_section(
+			array(
 				'id'    => 'feed',
 				'title' => __( 'Feed', 'mihdan-mailru-pulse-feed' ),
+			)
+		);
+
+		$feed_url = ( get_option( 'permalink_structure', '' ) === '' )
+			? add_query_arg( [ 'feed' => Main::get_feed_name() ], home_url( '/' ) )
+			: home_url( '/feed/' . Main::get_feed_name() );
+
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'   => 'slug',
+				'type' => 'html',
+				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
+				'desc' => sprintf(
+				/* translators: URL to feed */
+					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>', 'mihdan-mailru-pulse-feed' ),
+					$feed_url
+				),
 			)
 		);
 
@@ -263,86 +356,6 @@ class Settings {
 				'desc' => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
 				'options' => $this->get_registered_image_sizes(),
 				'default' => 'large',
-			)
-		);
-
-		$this->wposa_obj->add_section(
-			array(
-				'id'    => 'source',
-				'title' => __( 'Source', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$feed_url = ( get_option( 'permalink_structure', '' ) === '' )
-			? add_query_arg( [ 'feed' => Main::get_feed_name() ], home_url( '/' ) )
-			: home_url( '/feed/' . Main::get_feed_name() );
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'   => 'slug',
-				'type' => 'html',
-				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
-				'desc' => sprintf(
-					/* translators: URL to feed */
-					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>', 'mihdan-mailru-pulse-feed' ),
-					$feed_url
-				),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'      => 'title',
-				'type'    => 'text',
-				'name'    => __( 'Title', 'mihdan-mailru-pulse-feed' ),
-				'default' => get_bloginfo_rss( 'name' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'      => 'link',
-				'type'    => 'text',
-				'name'    => __( 'Link', 'mihdan-mailru-pulse-feed' ),
-				'default' => get_bloginfo_rss( 'url' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'      => 'description',
-				'type'    => 'textarea',
-				'name'    => __( 'Description', 'mihdan-mailru-pulse-feed' ),
-				'default' => get_bloginfo_rss( 'description' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'      => 'language',
-				'type'    => 'select',
-				'name'    => __( 'Language', 'mihdan-mailru-pulse-feed' ),
-				'options' => array(
-					'ru' => __( 'Russian', 'mihdan-mailru-pulse-feed' ),
-					'en' => __( 'English', 'mihdan-mailru-pulse-feed' ),
-				),
-				'default' => 'ru',
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'source',
-			array(
-				'id'      => 'image',
-				'type'    => 'image',
-				'name'    => __( 'Image', 'mihdan-mailru-pulse-feed' ),
-				'desc'    => __( 'Размер картинки должен быть не менее 200 пикселей по ширине и высоте.<br />Изображение будет кадрировано до квадратного.<br />Не допускается анимация и прозрачный фон.', 'mihdan-mailru-pulse-feed' ),
-				'default' => admin_url( 'images/w-logo-blue.png' ),
 			)
 		);
 
