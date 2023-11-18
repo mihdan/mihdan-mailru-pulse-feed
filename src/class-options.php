@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 
-class WP_OSA {
+class Options {
 
 	/**
 	 * Sections array.
@@ -704,6 +704,25 @@ class WP_OSA {
 	}
 
 	/**
+	 * Get the value of a settings field
+	 *
+	 * @param string $option  settings field name.
+	 * @param string $section the section name this field belongs to.
+	 * @param string $default default text if it's not found.
+	 * @return string
+	 */
+	public static function get_static_option( $option, $section, $default = '' ) {
+
+		$options = get_option( $section );
+
+		if ( isset( $options[ $option ] ) ) {
+			return $options[ $option ];
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Add submenu page to the Settings main menu.
 	 *
 	 * @param string $page_title
@@ -738,8 +757,10 @@ class WP_OSA {
 			<h1>Zen Feed <span style="font-size:50%;">v <?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></span></h1>
 			<div class="welcome-panel">
 				<div class="welcome-panel-content" style="max-width: 700px">
-					<h2>Внимание!</h2>
-					<p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>
+					<div class="welcome-panel-header">
+						<h2>Внимание!</h2>
+						<p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>
+					</div>
 				</div>
 			</div>
 			<?php echo $this->show_navigation(); ?>

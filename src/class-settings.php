@@ -3,13 +3,14 @@
  * @package mihdan-mailru-pulse-feed
  * @link https://help.mail.ru/feed/rss
  */
+
 namespace Mihdan\MailRuPulseFeed;
 
 use WP_Plugin_Install_List_Table;
 
 class Settings {
 	/**
-	 * @var WP_OSA
+	 * @var Options
 	 */
 	private $wposa_obj;
 
@@ -26,7 +27,7 @@ class Settings {
 	/**
 	 * Settings constructor.
 	 *
-	 * @param WP_OSA $wposa_obj
+	 * @param Options  $wposa_obj
 	 */
 	public function __construct( $wposa_obj ) {
 
@@ -202,13 +203,14 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'slug',
-				'type' => 'html',
-				'name' => __( 'URL', 'mihdan-mailru-pulse-feed' ),
-				'desc' => sprintf(
+				'id'      => 'slug',
+				'type'    => 'text',
+				'name'    => __( 'Slug', 'mihdan-mailru-pulse-feed' ),
+				'default' => 'mihdan-mailru-pulse-feed',
+				'desc'    => sprintf(
 				/* translators: URL to feed */
-					__( 'Your feed is available by url <a href="%1$s" target="_blank">%1$s</a>', 'mihdan-mailru-pulse-feed' ),
-					$feed_url
+					__( 'Your feed is available by <a href="%s" target="_blank">url</a>.', 'mihdan-mailru-pulse-feed' ),
+					esc_url( $feed_url )
 				),
 			)
 		);

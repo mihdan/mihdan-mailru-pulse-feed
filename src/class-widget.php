@@ -6,14 +6,14 @@ namespace Mihdan\MailRuPulseFeed;
 
 class Widget {
 	/**
-	 * @var WP_OSA
+	 * @var Options
 	 */
 	private $wposa_obj;
 
 	/**
 	 * Widget constructor.
 	 *
-	 * @param WP_OSA $wposa_obj
+	 * @param Options  $wposa_obj
 	 */
 	public function __construct( $wposa_obj ) {
 		$this->wposa_obj = $wposa_obj;

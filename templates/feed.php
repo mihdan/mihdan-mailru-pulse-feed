@@ -11,7 +11,7 @@ use Mihdan\MailRuPulseFeed\Main;
 header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=' . $this->wposa_obj->get_option( 'charset', 'feed' ), true );
 echo '<?xml version="1.0" encoding="' . esc_attr( $this->wposa_obj->get_option( 'charset', 'feed' ) ) . '"?' . '>';
 ?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:georss="http://www.georss.org/georss">
 	<channel>
 		<title><?php echo esc_html( $this->wposa_obj->get_option( 'title', 'source' ) ); ?></title>
 		<link><?php echo esc_url( $this->wposa_obj->get_option( 'link', 'source' ) ); ?></link>

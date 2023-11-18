@@ -125,7 +125,7 @@ class Main {
 	private $notifications;
 
 	/**
-	 * @var WP_OSA
+	 * @var Options
 	 */
 	private $wposa_obj;
 
@@ -139,6 +139,7 @@ class Main {
 	 */
 	private $defaults = [
 		'feed'   => [
+			'slug'                        => MIHDAN_MAILRU_PULSE_FEED_SLUG,
 			'charset'                     => 'UTF-8',
 			'orderby'                     => 'date',
 			'order'                       => 'DESC',
@@ -230,7 +231,7 @@ class Main {
 	 * Setup requirements.
 	 */
 	private function setup() {
-		$this->wposa_obj     = new WP_OSA();
+		$this->wposa_obj     = new Options();
 		$this->settings      = new Settings( $this->wposa_obj );
 		$this->widget        = new Widget( $this->wposa_obj );
 
@@ -291,6 +292,8 @@ class Main {
 		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_categories_to_item' ), 99 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
+		add_action( 'wp_loaded', array( $this, 'maybe_clear_cache' )  );
+
 		/**
 		 * Поддержка плагинов.
 		 */
@@ -301,6 +304,20 @@ class Main {
 
 		register_activation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_activate' ) );
 		register_deactivation_hook( MIHDAN_MAILRU_PULSE_FEED_FILE, array( $this, 'on_deactivate' ) );
+	}
+
+	/**
+	 * Trigger for clear cache via button in settings page.
+	 *
+	 * @return void
+	 * @throws Exception Exception.
+	 */
+	public function maybe_clear_cache(): void {
+		if ( is_admin() && ! empty( $_REQUEST['feed']['slug'] ) ) {
+			// Запишем в опцию ключ, что нужно сбросить правила перезаписи URL,
+			// на хуке init проверим этот ключ и вызовем flush_rewrite_rules.
+			update_option( $this->slug . '_flush_rewrite_rules', 1, true );
+		}
 	}
 
 	/**
@@ -1024,7 +1041,7 @@ class Main {
 			);
 			$actions[] = sprintf(
 				'<a href="%s" target="_blank" class="">%s</a>',
-				esc_url( site_url( sprintf( '/feed/%s/', $this->get_feed_name() ) ) ),
+				esc_url( site_url( sprintf( '/feed/%s/', self::get_feed_name() ) ) ),
 				esc_html__( 'Your Feed', 'mihdan-mailru-pulse-feed' )
 			);
 		}
@@ -1167,8 +1184,20 @@ class Main {
 		return str_replace( '.', '', microtime( true ) ) . wp_rand( 1000, 9999 );
 	}
 
-	public static function get_feed_name() {
-		return apply_filters( 'mihdan_mailru_pulse_feed_feedname', MIHDAN_MAILRU_PULSE_FEED_SLUG );
+	/**
+	 * Возвращает слаг (имя) ленты.
+	 *
+	 * @return string
+	 */
+	public static function get_feed_name(): string {
+		return apply_filters(
+			'mihdan_mailru_pulse_feed_feedname',
+			Options::get_static_option(
+				'slug',
+				'feed',
+				MIHDAN_MAILRU_PULSE_FEED_SLUG
+			)
+		);
 	}
 
 	/**
