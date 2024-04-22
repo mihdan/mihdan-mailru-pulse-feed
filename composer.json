@@ -43,7 +43,8 @@
     "wptrt/admin-notices": "^1.0",
     "ext-dom": "*",
     "ext-libxml": "*",
-    "imangazaliev/didom": "^2.0"
+    "imangazaliev/didom": "^2.0",
+    "symfony/serializer": "^5.4"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

@@ -10,6 +10,7 @@ namespace Mihdan\MailRuPulseFeed;
 use DiDom\Document;
 use DiDom\Element;
 use DiDom\Query;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use WP_Post;
 use WP_Query;
 use WP_Term;
@@ -130,11 +131,6 @@ class Main {
 	private $wposa_obj;
 
 	/**
-	 * @var Widget
-	 */
-	private $widget;
-
-	/**
 	 * @var array $defaults Default settings.
 	 */
 	private $defaults = [
@@ -155,9 +151,6 @@ class Main {
 			'post_thumbnail_size'         => 'large',
 			'delayed_publication_unit'    => 'MINUTE',
 			'delayed_publication_value'   => 0,
-		],
-		'widget' => [
-			'auto_append' => 'off',
 		],
 	];
 
@@ -233,7 +226,6 @@ class Main {
 	private function setup() {
 		$this->wposa_obj     = new Options();
 		$this->settings      = new Settings( $this->wposa_obj );
-		$this->widget        = new Widget( $this->wposa_obj );
 
 		( new Gutenberg() )->init();
 
@@ -288,8 +280,8 @@ class Main {
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'kses_content' ), 99 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'wrap_image_with_figure' ), 100, 2 );
 		add_filter( 'mihdan_mailru_pulse_feed_item_content', array( $this, 'add_thumbnail_to_item_content' ), 200, 2 );
-		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99 );
-		add_action( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_categories_to_item' ), 99 );
+		add_filter( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_enclosures_to_item' ), 99, 2 );
+		add_filter( 'mihdan_mailru_pulse_feed_item', array( $this, 'add_categories_to_item' ), 99, 2 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
 		add_action( 'wp_loaded', array( $this, 'maybe_clear_cache' )  );
@@ -356,18 +348,20 @@ class Main {
 	 * Add categories for given post id.
 	 *
 	 * @param int $post_id Post ID.
-	 * @return void
+	 * @return array
 	 */
-	public function add_categories_to_item( $post_id ) {
+	public function add_categories_to_item( $item, $post_id ) {
 		$categories = $this->get_categories_for_item( $post_id );
 
 		if ( ! $categories || ! is_array( $categories ) ) {
-			return;
+			return $item;
 		}
 
 		foreach ( $categories as $category ) {
-			echo $this->create_category( $category );
+			$item['category'][] = $category;
 		}
+
+		return $item;
 	}
 
 	/**
@@ -379,13 +373,14 @@ class Main {
 	 */
 	public function get_categories_for_item( $post_id ) {
 		$taxonomies = $this->wposa_obj->get_option( 'taxonomies', 'feed' );
-		$args = array(
+
+		$args = [
 			'fields'                 => 'names',
 			'update_term_meta_cache' => false,
-		);
+		];
 
 		if ( ! $taxonomies ) {
-			return array();
+			return [];
 		}
 
 		$terms = wp_get_object_terms( $post_id, array_values( $taxonomies ), $args );
@@ -410,16 +405,6 @@ class Main {
 	 */
 	public function admin_enqueue_scripts() {
 		wp_enqueue_style( MIHDAN_MAILRU_PULSE_FEED_SLUG, MIHDAN_MAILRU_PULSE_FEED_URL . '/assets/css/admin.css' );
-	}
-
-	/**
-	 * @return mixed|string|string[]|void
-	 */
-	public function get_the_content_feed( $post_id = null ) {
-		$content = apply_filters( 'the_content', get_the_content( null, false, $post_id ) );
-		$content = str_replace( ']]>', ']]&gt;', $content );
-
-		return $content;
 	}
 
 	/**
@@ -507,12 +492,18 @@ class Main {
 	/**
 	 * Add enclosures to item.
 	 *
+	 * @param array $item Post item.
 	 * @param int $post_id Post ID.
 	 */
-	public function add_enclosures_to_item( $post_id ) {
+	public function add_enclosures_to_item( $item, $post_id ) {
 		foreach ( $this->get_enclosures( $post_id ) as $enclosure ) {
-			echo $this->create_enclosure( $enclosure['url'], $enclosure['type'] );
+			$item['enclosure'][] = [
+				'@url' => $enclosure['url'],
+				'@type' => $enclosure['type'],
+			];
 		}
+
+		return $item;
 	}
 
 	/**
@@ -592,18 +583,6 @@ class Main {
 		}
 
 		return array();
-	}
-
-	/**
-	 * Create enclosure tag.
-	 *
-	 * @param string $url URL.
-	 * @param string $type Mime type.
-	 *
-	 * @return string
-	 */
-	private function create_enclosure( $url, $type ) {
-		return sprintf( '<enclosure url="%s" type="%s"/>', $url, $type );
 	}
 
 	/**
@@ -938,6 +917,7 @@ class Main {
 	 */
 	public function render_meta_box( $post ) {
 		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
+		$kill    = (bool) get_post_meta( $post->ID, $this->slug . '_kill', true );
 		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
 		$excerpt = (string) get_post_meta( $post->ID, $this->slug . '_excerpt', true );
 		?>
@@ -972,7 +952,7 @@ class Main {
 			<tr>
 				<th class="mmpf-form-th">
 					<label for="<?php echo esc_attr( $this->slug ); ?>_exclude">
-						<?php _e( 'Exclude', 'mihdan-mailru-pulse-feed' ); ?>
+						<?php _e( 'Visibility', 'mihdan-mailru-pulse-feed' ); ?>
 					</label>
 				</th>
 			</tr>
@@ -980,6 +960,7 @@ class Main {
 				<td class="mmpf-form-td">
 					<ul>
 						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_exclude"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_kill" id="<?php echo esc_attr( $this->slug ); ?>_kill" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_kill"><?php _e( 'Kill From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
 					</ul>
 				</td>
 			</tr>
@@ -1004,6 +985,12 @@ class Main {
 			update_post_meta( $post_id, $this->slug . '_exclude', 1 );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_exclude' );
+		}
+
+		if ( isset( $_POST[ $this->slug . '_kill' ] ) ) {
+			update_post_meta( $post_id, $this->slug . '_kill', 1 );
+		} else {
+			delete_post_meta( $post_id, $this->slug . '_kill' );
 		}
 
 		if ( ! empty( $_POST[ $this->slug . '_title' ] ) ) {
@@ -1201,45 +1188,23 @@ class Main {
 	}
 
 	/**
-	 * Get post title for rss item.
+	 * Регистрирует новую ленту.
 	 *
-	 * @param int $post_id Post ID.
-	 *
-	 * @return string
+	 * @return void
 	 */
-	public function get_post_title( $post_id = null ) {
-		$title = get_the_title_rss();
-
-		if ( ! empty( get_post_meta( $post_id, $this->slug . '_title', true ) ) ) {
-			$title = get_post_meta( $post_id, $this->slug . '_title', true );
-		}
-
-		return apply_filters( 'mihdan_mailru_pulse_feed_item_title', $title, $post_id );
-	}
-
-	/**
-	 * Get post excerpt for rss item.
-	 *
-	 * @param int $post_id Post ID.
-	 *
-	 * @return string
-	 */
-	public function get_post_excerpt( $post_id = null ) {
-		$excerpt = get_the_excerpt();
-
-		if ( ! empty( get_post_meta( $post_id, $this->slug . '_excerpt', true ) ) ) {
-			$excerpt = get_post_meta( $post_id, $this->slug . '_excerpt', true );
-		}
-
-		return apply_filters( 'mihdan_mailru_pulse_feed_item_excerpt', $excerpt, $post_id );
-	}
-
-	public function add_feed() {
+	public function add_feed(): void {
 		add_feed( self::get_feed_name(), array( $this, 'require_feed_template' ) );
 	}
 
+	/**
+	 * Подключает шаблон для отрисовки ленты.
+	 *
+	 * @link https://stackoverflow.com/a/47547774/2050648
+	 * @link https://stackoverflow.com/a/61757839/2050648
+	 * @return void
+	 */
 	public function require_feed_template() {
-		require MIHDAN_MAILRU_PULSE_FEED_PATH . '/templates/feed.php';
+		( new Feed( new XmlEncoder(), $this->wposa_obj ) )->render();
 	}
 
 	public function flush_rewrite_rules() {

@@ -755,18 +755,18 @@ class Options {
 		?>
 		<div class="wrap">
 			<h1>Zen Feed <span style="font-size:50%;">v <?php echo esc_html( MIHDAN_MAILRU_PULSE_FEED_VERSION ); ?></span></h1>
-			<div class="welcome-panel">
-				<div class="welcome-panel-content" style="max-width: 700px">
-					<div class="welcome-panel-header">
-						<h2>Внимание!</h2>
-						<p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>
-					</div>
-				</div>
-			</div>
 			<?php echo $this->show_navigation(); ?>
 			<?php echo $this->show_forms(); ?>
 		</div>
 		<?php
+		wp_admin_notice(
+			'<h2>Внимание!</h2><p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>',
+			[
+				'type'           => 'info',
+				'dismissible'    => true,
+				'paragraph_wrap' => false,
+			]
+		);
 	}
 
 	/**

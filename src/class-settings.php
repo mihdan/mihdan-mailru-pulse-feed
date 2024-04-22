@@ -218,6 +218,20 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
+				'id'      => 'type',
+				'type'    => 'select',
+				'name'    => __( 'Type', 'mihdan-mailru-pulse-feed' ),
+				'options' => [
+					'webmaster' => __( 'Webmaster', 'mihdan-mailru-pulse-feed' ),
+					'agency'    => __( 'News Agency', 'mihdan-mailru-pulse-feed' ),
+				],
+				'default' => 'webmaster',
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
 				'id'      => 'charset',
 				'type'    => 'select',
 				'name'    => __( 'Feed Charset', 'mihdan-mailru-pulse-feed' ),
@@ -285,7 +299,7 @@ class Settings {
 				'type'    => 'multicheck',
 				'name'    => __( 'Taxonomies', 'mihdan-mailru-pulse-feed' ),
 				'options' => $this->taxonomies,
-				'default' => array( 'category' => 'category' ),
+				'default' => [],
 			)
 		);
 
@@ -331,17 +345,6 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'fulltext',
-				'type' => 'checkbox',
-				'std'  => 'on',
-				'name' => __( 'Fulltext', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Enable Fulltext Support', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'feed',
-			array(
 				'id'   => 'post_thumbnail',
 				'type' => 'checkbox',
 				'name' => __( 'Post thumbnail', 'mihdan-mailru-pulse-feed' ),
@@ -352,10 +355,10 @@ class Settings {
 		$this->wposa_obj->add_field(
 			'feed',
 			array(
-				'id'   => 'post_thumbnail_size',
-				'type' => 'select',
-				'name' => __( 'Post thumbnail size', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
+				'id'      => 'post_thumbnail_size',
+				'type'    => 'select',
+				'name'    => __( 'Post thumbnail size', 'mihdan-mailru-pulse-feed' ),
+				'desc'    => __( 'Add a post thumbnail to beginning of the feed item', 'mihdan-mailru-pulse-feed' ),
 				'options' => $this->get_registered_image_sizes(),
 				'default' => 'large',
 			)
@@ -379,44 +382,6 @@ class Settings {
 				'name'    => __( 'Exclude', 'mihdan-mailru-pulse-feed' ),
 				'desc'    => __( 'Выражения <code>xpath</code> для исключения тегов, блоков, рекламных вставок <br />из содержимого записей. Каждое выражение с новой строки.', 'mihdan-mailru-pulse-feed' ),
 				'placeholder' => __( 'Например, //div[contains(@class, \'td-doubleSlider-2\')]', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_section(
-			array(
-				'id'    => 'widget',
-				'title' => __( 'Widget', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'widget',
-			array(
-				'id'   => 'shortcode',
-				'type' => 'html',
-				'name' => __( 'Shortcode', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Widget also available by shortcode <code>[mihdan-mailru-pulse-widget]</code>', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'widget',
-			array(
-				'id'          => 'id',
-				'type'        => 'text',
-				'name'        => __( 'Widget ID', 'mihdan-mailru-pulse-feed' ),
-				'placeholder' => 'partners_widget_domain',
-				'desc'        => __( 'Идентификатор можно посмотреть в разделе "Личный кабинет партнёра &rarr; <a href="https://pulse.mail.ru/cabinet/widgets" target="_blank">Виджеты</a>"', 'mihdan-mailru-pulse-feed' ),
-			)
-		);
-
-		$this->wposa_obj->add_field(
-			'widget',
-			array(
-				'id'   => 'auto_append',
-				'type' => 'checkbox',
-				'name' => __( 'Auto Append', 'mihdan-mailru-pulse-feed' ),
-				'desc' => __( 'Автоматически добавлять виджет в конец записей', 'mihdan-mailru-pulse-feed' ),
 			)
 		);
 
