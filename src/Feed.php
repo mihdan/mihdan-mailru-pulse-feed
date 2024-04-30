@@ -53,13 +53,18 @@ class Feed {
 
 		$type = $this->options->get_option( 'type', 'feed' );
 
-		$this->data['@version']       = '2.0';
-		$this->data['@xmlns:content'] = 'http://purl.org/rss/1.0/modules/content/';
-		$this->data['@xmlns:dc']      = 'http://purl.org/dc/elements/1.1/';
-		$this->data['@xmlns:media']   = 'http://search.yahoo.com/mrss/';
-		$this->data['@xmlns:atom']    = 'http://www.w3.org/2005/Atom';
-		$this->data['@xmlns:georss']  = 'http://www.georss.org/georss';
-		$this->data['@xmlns:yandex']  = 'http://news.yandex.ru';
+		$this->data['@version']     = '2.0';
+		$this->data['@xmlns:media'] = 'http://search.yahoo.com/mrss/';
+
+		// Для фида в Яндекс.Новости (чтобы работал тег yandex:fulltext).
+		if ( $type === 'agency' ) {
+			$this->data['@xmlns:yandex'] = 'http://news.yandex.ru';
+		} else {
+			$this->data['@xmlns:content'] = 'http://purl.org/rss/1.0/modules/content/';
+			$this->data['@xmlns:dc']      = 'http://purl.org/dc/elements/1.1/';
+			$this->data['@xmlns:atom']    = 'http://www.w3.org/2005/Atom';
+			$this->data['@xmlns:georss']  = 'http://www.georss.org/georss';
+		}
 
 		$channel = [
 			'title'       => esc_html( $this->options->get_option( 'title', 'source' ) ),
