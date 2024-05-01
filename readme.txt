@@ -1,10 +1,13 @@
 === Zen Feed ===
 Contributors: mihdan
-Tags: zen, dzen, vk, mailru, pulse, feed, seo, seo-friendly
+Tags: zen, vk, mailru, pulse, feed
 Requires at least: 5.3
 Tested up to: 6.5
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 Requires PHP: 7.4
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Donate link: https://www.kobzarev.com/donate/
 
 Плагин формирует RSS-ленту (фид) для платформы Дзен (ранее Яндекс.Дзен и Пульс), которая создана для просмотра и создания контента.
 
@@ -120,7 +123,10 @@ add_filter(
 
 == Changelog ==
 
-= 0.8.1 (22.04.2024) =
+= 0.8.2 (01.05.2024) =
+* Изменен `Content-Type` ленты с `text/xml` на `application/rss+xml`
+
+= 0.8.1 (30.04.2024) =
 * Исправлены ошибки отображения пролога ленты
 
 = 0.8.0 (22.04.2024) =

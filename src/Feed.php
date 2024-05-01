@@ -127,7 +127,7 @@ class Feed {
 	 * @return void
 	 */
 	public function render(): void {
-		header( 'Content-Type: ' . feed_content_type( 'rss-http' ) . '; charset=' . $this->options->get_option( 'charset', 'feed' ), true );
+		header( 'Content-Type: ' . feed_content_type( 'rss' ) . '; charset=' . $this->options->get_option( 'charset', 'feed' ), true );
 
 		// phpcs:disable.
 		echo $this->encoder->encode(
