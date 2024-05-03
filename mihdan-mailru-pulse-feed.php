@@ -2,15 +2,15 @@
 /**
  * Zen Feed
  *
- * Plugin Name: Zen Feed (Яндекс.Новости, Дзен, Пульс)
+ * Plugin Name: Zen Feed (Свежее и актуальное, Дзен, Пульс, Яндекс.Новости)
  * Plugin URI: https://wordpress.org/plugins/mihdan-mailru-pulse-feed/
- * Description: Плагин формирует RSS-ленту (фид) для платформы Дзен. Подходит для создания ленты под Яндекс.Новости, Дзен (как для паблишеров, так и для новостных агентств) и Пульс от Mail.ru.
+ * Description: Плагин формирует RSS-ленту (фид), которая подходит для таких сервисов как: "Свежее и актуальное" в панели вебмастера Яндекс, "Яндекс.Новости", "Дзен" (как для паблишеров, так и для новостных агентств) и "Пульс" от Mail.ru.
  * Author: Mikhail Kobzarev
  * Author URI: https://www.kobzarev.com/
  * Requires at least: 5.3
  * Tested up to: 6.5
- * Version: 0.8.3
- * Stable tag: 0.8.3
+ * Version: 0.8.3.1
+ * Stable tag: 0.8.3.1
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const MIHDAN_MAILRU_PULSE_FEED_VERSION = '0.8.3';
+const MIHDAN_MAILRU_PULSE_FEED_VERSION = '0.8.3.1';
 const MIHDAN_MAILRU_PULSE_FEED_PATH    = __DIR__;
 const MIHDAN_MAILRU_PULSE_FEED_FILE    = __FILE__;
 const MIHDAN_MAILRU_PULSE_FEED_SLUG    = 'mihdan-mailru-pulse-feed';

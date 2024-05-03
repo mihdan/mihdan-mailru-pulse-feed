@@ -102,6 +102,7 @@ class Feed {
 				 *
 				 * @link https://dzen.ru/help/ru/website/rss-modify.html
 				 * @link https://dzen.ru/help/news/ru/export-content/export
+				 * @link https://yandex.ru/support/webmaster/search-appearance/news.html
 				 */
 				if ( $type === 'webmaster' || $type === '' ) {
 					$item['content:encoded'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
