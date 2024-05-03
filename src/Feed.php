@@ -110,7 +110,7 @@ class Feed {
 				}
 
 				// Фильтрует конкретный item.
-				$this->data['item'][] = apply_filters(
+				$this->data['channel']['item'][] = apply_filters(
 					'mihdan_mailru_pulse_feed_item',
 					$item,
 					get_the_ID()
@@ -127,7 +127,7 @@ class Feed {
 	 * @return void
 	 */
 	public function render(): void {
-		header( 'Content-Type: ' . feed_content_type( 'rss' ) . '; charset=' . $this->options->get_option( 'charset', 'feed' ), true );
+		header( 'Content-Type: ' . feed_content_type( 'rss2' ) . '; charset=' . $this->options->get_option( 'charset', 'feed' ), true );
 
 		// phpcs:disable.
 		echo $this->encoder->encode(
