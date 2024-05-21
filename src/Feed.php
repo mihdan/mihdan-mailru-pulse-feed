@@ -93,7 +93,7 @@ class Feed {
 					'guid'        => get_the_guid(),
 					'title'       => $this->get_post_title( get_the_ID() ),
 					'author'      => get_the_author(),
-					'pubDate'     => get_post_time( 'r', true ),
+					'pubDate'     => get_post_time( 'r' ),
 					'description' => $this->get_post_excerpt( get_the_ID() ),
 				];
 
@@ -107,7 +107,7 @@ class Feed {
 				if ( $type === 'webmaster' || $type === '' ) {
 					$item['content:encoded'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
 				} else {
-					$item['yandex:fulltext'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
+					$item['yandex:full-text'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
 				}
 
 				// Фильтрует конкретный item.

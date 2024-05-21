@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: zen, vk, mailru, pulse, feed
 Requires at least: 5.3
 Tested up to: 6.5
-Stable tag: 0.8.3.1
+Stable tag: 0.8.4
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.8.4 (21.05.2024) =
+* Исправлена ошибка вывода даты без указания часового пояса
+* Исправлена опечатка в названиии тега `<yandex:fulltext/>`
 
 = 0.8.3 (03.05.2024) =
 * Исправлена оишбка вложенности тега `<channel/>` в ленте
