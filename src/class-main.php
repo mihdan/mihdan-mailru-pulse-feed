@@ -146,7 +146,6 @@ class Main {
 				'category' => 'category',
 			],
 			'total_posts'                 => 1000,
-			'fulltext'                    => 'on',
 			'post_thumbnail'              => 'off',
 			'post_thumbnail_size'         => 'large',
 			'delayed_publication_unit'    => 'MINUTE',
@@ -455,7 +454,6 @@ class Main {
 	 */
 	public function add_thumbnail_to_item_content( $content, $post_id ) {
 		if (
-			'on' === $this->wposa_obj->get_option( 'fulltext', 'feed' ) &&
 			'on' === $this->wposa_obj->get_option( 'post_thumbnail', 'feed' ) &&
 			has_post_thumbnail( $post_id )
 		) {
