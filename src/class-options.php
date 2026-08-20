@@ -279,6 +279,9 @@ class Options {
 				// Sanitize Callback.
 				$sanitize_callback = isset( $field['sanitize_callback'] ) ? $field['sanitize_callback'] : '';
 
+				// Условие показа поля в зависимости от значения другого поля этой же секции.
+				$condition = isset( $field['condition'] ) ? $field['condition'] : array();
+
 				$args = array(
 					'id'                => $id,
 					'type'              => $type,
@@ -291,6 +294,7 @@ class Options {
 					'std'               => $default,
 					'placeholder'       => $placeholder,
 					'sanitize_callback' => $sanitize_callback,
+					'condition'         => $condition,
 				);
 
 				/**
@@ -311,7 +315,7 @@ class Options {
 				add_settings_field(
 					$field_id,
 					$name,
-					array( $this, 'callback_' . $type ),
+					array( $this, 'render_conditional_field' ),
 					$section,
 					$section,
 					$args
@@ -370,7 +374,7 @@ class Options {
 		// Iterate over registered fields and see if we can find proper callback.
 		foreach ( $this->fields_array as $section => $field_array ) {
 			foreach ( $field_array as $field ) {
-				if ( $field['name'] != $slug ) {
+				if ( $field['id'] !== $slug ) {
 					continue;
 				}
 
@@ -405,6 +409,33 @@ class Options {
 
 
 	/**
+	 * Отрисовывает поле, оборачивая его в контейнер для условного показа/скрытия,
+	 * если для поля задан ключ `condition`.
+	 *
+	 * @param array $args Аргументы поля settings API, включая `type` и `condition`.
+	 *
+	 * @return void
+	 */
+	public function render_conditional_field( $args ) {
+		$condition = ! empty( $args['condition'] ) ? $args['condition'] : array();
+		$has_condition = ! empty( $condition['field'] );
+
+		if ( $has_condition ) {
+			printf(
+				'<div class="wpsa-conditional-field" data-condition-field="%1$s" data-condition-value="%2$s">',
+				esc_attr( $condition['field'] ),
+				esc_attr( implode( ',', (array) $condition['value'] ) )
+			);
+		}
+
+		call_user_func( array( $this, 'callback_' . $args['type'] ), $args );
+
+		if ( $has_condition ) {
+			echo '</div>';
+		}
+	}
+
+	/**
 	 * Displays a title field for a settings field
 	 *
 	 * @param array $args settings field args
@@ -433,7 +464,7 @@ class Options {
 		$size  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'regular';
 		$type  = isset( $args['type'] ) ? $args['type'] : 'text';
 
-		$html  = sprintf( '<input type="%1$s" class="%2$s-text" id="%3$s[%4$s]" name="%3$s[%4$s]" value="%5$s"placeholder="%6$s"/>', $type, $size, $args['section'], $args['id'], $value, $args['placeholder'] );
+		$html  = sprintf( '<input type="%1$s" class="%2$s-text" id="%3$s[%4$s]" name="%3$s[%4$s]" value="%5$s" placeholder="%6$s"/>', esc_attr( $type ), esc_attr( $size ), esc_attr( $args['section'] ), esc_attr( $args['id'] ), $value, esc_attr( $args['placeholder'] ) );
 		$html .= $this->get_field_description( $args );
 
 		echo $html;
@@ -760,7 +791,7 @@ class Options {
 		</div>
 		<?php
 		wp_admin_notice(
-			'<h2>Внимание!</h2><p>В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>',
+			'<h2>Что нового?</h2><p><b>20.08.2026</b>. Добавлен новый тип ленты <b>Zen & News (seamless)</b> (вкладка «Feed» → поле «Type») — единый формат, который можно одновременно использовать и в Дзене, и в Новостях, без необходимости вести две отдельные ленты.</p><p><b>30.09.2023</b>. В связи с объединением сервисов <b>Яндекс.Дзен</b> и <b>Пульс от Mail.ru</b> в единую платформу под названием <b>Дзен</b> проведен полный ребрендинг плагина, чтобы им можно было пользоваться и дальше. Функционал расширен, кодовая база обновлена.</p>',
 			[
 				'type'           => 'info',
 				'dismissible'    => true,
@@ -827,6 +858,26 @@ class Options {
 
 				//Initiate Color Picker.
 				$('.color-picker').iris();
+
+				// Показывает/скрывает поля, у которых задано условие `data-condition-field`,
+				// в зависимости от текущего значения управляющего поля.
+				function wpsaToggleConditionalFields() {
+					$( '.wpsa-conditional-field' ).each( function() {
+						var $wrap        = $( this );
+						var $row         = $wrap.closest( 'tr' );
+						var fieldId      = $wrap.data( 'condition-field' );
+						var allowed      = String( $wrap.data( 'condition-value' ) ).split( ',' );
+						var $table       = $wrap.closest( 'table.form-table' );
+						var $control     = $table.find( '[name$="[' + fieldId + ']"]' ).first();
+						var controlValue = $control.is( ':checkbox' ) ? ( $control.is( ':checked' ) ? 'on' : 'off' ) : $control.val();
+
+						$row.toggle( allowed.indexOf( controlValue ) !== -1 );
+					});
+				}
+
+				wpsaToggleConditionalFields();
+
+				$( '.metabox-holder' ).on( 'change', 'input, select', wpsaToggleConditionalFields );
 
 				// Switches option sections
 				$( '.group' ).hide();

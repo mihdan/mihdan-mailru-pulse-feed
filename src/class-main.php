@@ -10,6 +10,7 @@ namespace Mihdan\MailRuPulseFeed;
 use DiDom\Document;
 use DiDom\Element;
 use DiDom\Query;
+use Mihdan\MailRuPulseFeed\Feed\FeedFactory;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use WP_Post;
 use WP_Query;
@@ -862,6 +863,7 @@ class Main {
 	 */
 	public function add_category_meta_box( WP_Term $term ) {
 		$exclude = (bool) get_term_meta( $term->term_id, $this->slug . '_exclude', true );
+		wp_nonce_field( $this->slug . '_category_meta_box', $this->slug . '_category_meta_box_nonce' );
 		?>
 		<h2><?php _e( 'Zen Feed', 'mihdan-mailru-pulse-feed' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -883,6 +885,13 @@ class Main {
 	 * @param int $term_id Term ID .
 	 */
 	public function save_category_meta_box( $term_id ) {
+		if (
+			! isset( $_POST[ $this->slug . '_category_meta_box_nonce' ] ) ||
+			! wp_verify_nonce( $_POST[ $this->slug . '_category_meta_box_nonce' ], $this->slug . '_category_meta_box' )
+		) {
+			return;
+		}
+
 		if ( ! current_user_can( 'edit_term', $term_id ) ) {
 			return;
 		}
@@ -918,6 +927,7 @@ class Main {
 		$kill    = (bool) get_post_meta( $post->ID, $this->slug . '_kill', true );
 		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
 		$excerpt = (string) get_post_meta( $post->ID, $this->slug . '_excerpt', true );
+		wp_nonce_field( $this->slug . '_post_meta_box', $this->slug . '_post_meta_box_nonce' );
 		?>
 		<table class="form-table">
 			<tbody>
@@ -972,6 +982,13 @@ class Main {
 	 * @param int $post_id Post ID .
 	 */
 	public function save_post_meta_box( $post_id ) {
+		if (
+			! isset( $_POST[ $this->slug . '_post_meta_box_nonce' ] ) ||
+			! wp_verify_nonce( $_POST[ $this->slug . '_post_meta_box_nonce' ], $this->slug . '_post_meta_box' )
+		) {
+			return;
+		}
+
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
 			return;
 		}
@@ -992,13 +1009,13 @@ class Main {
 		}
 
 		if ( ! empty( $_POST[ $this->slug . '_title' ] ) ) {
-			update_post_meta( $post_id, $this->slug . '_title', $_POST[ $this->slug . '_title' ] );
+			update_post_meta( $post_id, $this->slug . '_title', sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_title' ] ) ) );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_title' );
 		}
 
 		if ( ! empty( $_POST[ $this->slug . '_excerpt' ] ) ) {
-			update_post_meta( $post_id, $this->slug . '_excerpt', $_POST[ $this->slug . '_excerpt' ] );
+			update_post_meta( $post_id, $this->slug . '_excerpt', sanitize_textarea_field( wp_unslash( $_POST[ $this->slug . '_excerpt' ] ) ) );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_excerpt' );
 		}
@@ -1202,7 +1219,7 @@ class Main {
 	 * @return void
 	 */
 	public function require_feed_template() {
-		( new Feed( new XmlEncoder(), $this->wposa_obj ) )->render();
+		FeedFactory::make( new XmlEncoder(), $this->wposa_obj )->render();
 	}
 
 	public function flush_rewrite_rules() {

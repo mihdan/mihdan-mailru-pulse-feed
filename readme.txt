@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: zen, vk, mailru, pulse, feed
 Requires at least: 5.3
 Tested up to: 6.6
-Stable tag: 0.8.5
+Stable tag: 0.8.6
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,11 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.8.6 (20.08.2026) =
+* Добавлен новый формат ленты `Zen & News (seamless)` для одновременного использования в Дзене и Новостях
+* Проведён рефакторинг кода, улучшена архитектура плагина
+* Повышена безопасность плагина
 
 = 0.8.5 (28.09.2024) =
 * Добавлена поддержка WordPress 6.6+

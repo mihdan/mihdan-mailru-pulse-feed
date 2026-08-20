@@ -52,6 +52,20 @@ class Settings {
 	}
 
 	/**
+	 * Возвращает callback для ограничения значения select-поля белым списком.
+	 *
+	 * @param array  $allowed Допустимые значения.
+	 * @param string $default Значение по умолчанию, если пришло что-то чужое.
+	 *
+	 * @return callable
+	 */
+	private function sanitize_enum( array $allowed, string $default ): callable {
+		return static function ( $value ) use ( $allowed, $default ) {
+			return in_array( $value, $allowed, true ) ? $value : $default;
+		};
+	}
+
+	/**
 	 * Get all registered image sizes.
 	 *
 	 * @return array
@@ -224,8 +238,39 @@ class Settings {
 				'options' => [
 					'webmaster' => __( 'Webmaster', 'mihdan-mailru-pulse-feed' ),
 					'agency'    => __( 'News Agency', 'mihdan-mailru-pulse-feed' ),
+					'zen-news'  => __( 'Zen & News (seamless)', 'mihdan-mailru-pulse-feed' ),
 				],
-				'default' => 'webmaster',
+				'default'           => 'webmaster',
+				'sanitize_callback' => $this->sanitize_enum( [ 'webmaster', 'agency', 'zen-news' ], 'webmaster' ),
+			)
+		);
+
+		$this->wposa_obj->add_field(
+			'feed',
+			array(
+				'id'        => 'zen_news_content_type',
+				'type'      => 'select',
+				'name'      => __( 'Content Type', 'mihdan-mailru-pulse-feed' ),
+				'condition' => array(
+					'field' => 'type',
+					'value' => 'zen-news',
+				),
+				'desc'      => sprintf(
+				/* translators: %s: URL to Dzen help page */
+					__( 'Применяется только для типа ленты <b>Zen & News (seamless)</b>.<br />
+					<b>news</b> — материал с полным текстом новости будет опубликован для показа и в Новостях, и в лентах Дзена. Из сервиса Новости в Дзене сообщение будет вести на статью в вашем канале.<br />
+					<b>news_only</b> — уводящая на ваш сайт новость. Подходит только для сервиса Новости в Дзене.<br />
+					<b>blogs_only</b> — статья («вечнозелёный» контент), предназначенная только для рекомендательных лент. Заголовки таких материалов могут не совпадать с заголовками на сайте.<br />
+					Подробнее в <a href="%s" target="_blank">документации</a>.', 'mihdan-mailru-pulse-feed' ),
+					esc_url( 'https://dzen.ru/help/ru/news/seamless/rss.html' )
+				),
+				'options' => array(
+					'news'       => __( 'news — Дзен и Новости', 'mihdan-mailru-pulse-feed' ),
+					'news_only'  => __( 'news_only — Только Новости', 'mihdan-mailru-pulse-feed' ),
+					'blogs_only' => __( 'blogs_only — Только Дзен', 'mihdan-mailru-pulse-feed' ),
+				),
+				'default'           => 'news',
+				'sanitize_callback' => $this->sanitize_enum( [ 'news', 'news_only', 'blogs_only' ], 'news' ),
 			)
 		);
 
