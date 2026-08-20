@@ -6,6 +6,7 @@
 
 namespace Mihdan\MailRuPulseFeed;
 
+use Mihdan\MailRuPulseFeed\Feed\ZenNewsFeed;
 use WP_Plugin_Install_List_Table;
 
 class Settings {
@@ -270,7 +271,7 @@ class Settings {
 					'blogs_only' => __( 'blogs_only — Только Дзен', 'mihdan-mailru-pulse-feed' ),
 				),
 				'default'           => 'news',
-				'sanitize_callback' => $this->sanitize_enum( [ 'news', 'news_only', 'blogs_only' ], 'news' ),
+				'sanitize_callback' => $this->sanitize_enum( ZenNewsFeed::CONTENT_TYPES, 'news' ),
 			)
 		);
 

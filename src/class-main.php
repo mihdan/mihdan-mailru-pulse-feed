@@ -11,6 +11,7 @@ use DiDom\Document;
 use DiDom\Element;
 use DiDom\Query;
 use Mihdan\MailRuPulseFeed\Feed\FeedFactory;
+use Mihdan\MailRuPulseFeed\Feed\ZenNewsFeed;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use WP_Post;
 use WP_Query;
@@ -927,6 +928,15 @@ class Main {
 		$kill    = (bool) get_post_meta( $post->ID, $this->slug . '_kill', true );
 		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
 		$excerpt = (string) get_post_meta( $post->ID, $this->slug . '_excerpt', true );
+
+		// Блок "Где публикуем?" показываем только для формата Zen & News (seamless).
+		$show_content_type = $this->wposa_obj->get_option( 'type', 'feed' ) === 'zen-news';
+		$content_type      = get_post_meta( $post->ID, $this->slug . '_content_type', true );
+
+		if ( ! in_array( $content_type, ZenNewsFeed::CONTENT_TYPES, true ) ) {
+			$content_type = $this->wposa_obj->get_option( 'zen_news_content_type', 'feed', 'news' );
+		}
+
 		wp_nonce_field( $this->slug . '_post_meta_box', $this->slug . '_post_meta_box_nonce' );
 		?>
 		<table class="form-table">
@@ -968,10 +978,53 @@ class Main {
 				<td class="mmpf-form-td">
 					<ul>
 						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_exclude"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
-						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_kill" id="<?php echo esc_attr( $this->slug ); ?>_kill" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_kill"><?php _e( 'Kill From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_kill" id="<?php echo esc_attr( $this->slug ); ?>_kill" <?php checked( $kill, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_kill"><?php _e( 'Kill From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
 					</ul>
 				</td>
 			</tr>
+			<?php if ( $show_content_type ) : ?>
+			<tr>
+				<th class="mmpf-form-th">
+					<label><?php _e( 'Где публикуем?', 'mihdan-mailru-pulse-feed' ); ?></label>
+				</th>
+			</tr>
+			<tr id="<?php echo esc_attr( $this->slug ); ?>_content_type_row">
+				<td class="mmpf-form-td">
+					<ul>
+						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="blogs_only" <?php checked( $content_type, 'blogs_only' ); ?> /> <?php _e( 'Дзен', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="news_only" <?php checked( $content_type, 'news_only' ); ?> /> <?php _e( 'Новости', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="news" <?php checked( $content_type, 'news' ); ?> /> <?php _e( 'Дзен и новости', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+					</ul>
+					<p class="description"><?php _e( 'Переопределяет тип публикации по умолчанию из настроек плагина для этой записи. Недоступно, если запись исключена или "убита" из ленты.', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
+			<script>
+				( function() {
+					var exclude = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_exclude' );
+					var kill    = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_kill' );
+					var row     = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_content_type_row' );
+
+					function toggle() {
+						var disabled = ( exclude && exclude.checked ) || ( kill && kill.checked );
+
+						row.style.opacity = disabled ? '0.5' : '';
+
+						[].forEach.call( row.querySelectorAll( 'input[type="radio"]' ), function( radio ) {
+							radio.disabled = disabled;
+						} );
+					}
+
+					if ( exclude ) {
+						exclude.addEventListener( 'change', toggle );
+					}
+					if ( kill ) {
+						kill.addEventListener( 'change', toggle );
+					}
+
+					toggle();
+				} )();
+			</script>
+			<?php endif; ?>
 			</tbody>
 		</table>
 		<?php
@@ -1018,6 +1071,17 @@ class Main {
 			update_post_meta( $post_id, $this->slug . '_excerpt', sanitize_textarea_field( wp_unslash( $_POST[ $this->slug . '_excerpt' ] ) ) );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_excerpt' );
+		}
+
+		// Радио-кнопки не отправляются в форме, если отключены через JS
+		// (запись исключена или "убита" из ленты) — в этом случае сохранённое
+		// ранее значение не трогаем.
+		if ( isset( $_POST[ $this->slug . '_content_type' ] ) ) {
+			$content_type = sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_content_type' ] ) );
+
+			if ( in_array( $content_type, ZenNewsFeed::CONTENT_TYPES, true ) ) {
+				update_post_meta( $post_id, $this->slug . '_content_type', $content_type );
+			}
 		}
 	}
 
