@@ -938,7 +938,7 @@ class Main {
 
 		wp_nonce_field( $this->slug . '_post_meta_box', $this->slug . '_post_meta_box_nonce' );
 		?>
-		<table class="form-table">
+		<table class="form-table" id="<?php echo esc_attr( $this->slug ); ?>_meta_box_table">
 			<tbody>
 			<tr>
 				<th class="mmpf-form-th">
@@ -959,7 +959,7 @@ class Main {
 					<label><?php _e( 'Где публикуем?', 'mihdan-mailru-pulse-feed' ); ?></label>
 				</th>
 			</tr>
-			<tr id="<?php echo esc_attr( $this->slug ); ?>_content_type_row">
+			<tr class="mmpf-exclude-dependent">
 				<td class="mmpf-form-td">
 					<ul>
 						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="blogs_only" <?php checked( $content_type, 'blogs_only' ); ?> /> <?php _e( 'Дзен', 'mihdan-mailru-pulse-feed' ); ?></label></li>
@@ -968,38 +968,6 @@ class Main {
 					</ul>
 				</td>
 			</tr>
-			<script>
-				( function() {
-					var excludeRadios = document.getElementsByName( '<?php echo esc_js( $this->slug ); ?>_exclude' );
-					var row            = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_content_type_row' );
-
-					function isExcluded() {
-						for ( var i = 0; i < excludeRadios.length; i++ ) {
-							if ( excludeRadios[ i ].checked ) {
-								return excludeRadios[ i ].value === 'yes';
-							}
-						}
-
-						return false;
-					}
-
-					function toggle() {
-						var disabled = isExcluded();
-
-						row.style.opacity = disabled ? '0.5' : '';
-
-						[].forEach.call( row.querySelectorAll( 'input[type="radio"]' ), function( radio ) {
-							radio.disabled = disabled;
-						} );
-					}
-
-					[].forEach.call( excludeRadios, function( radio ) {
-						radio.addEventListener( 'change', toggle );
-					} );
-
-					toggle();
-				} )();
-			</script>
 			<?php endif; ?>
 			<tr>
 				<th class="mmpf-form-th">
@@ -1008,7 +976,7 @@ class Main {
 					</label>
 				</th>
 			</tr>
-			<tr>
+			<tr class="mmpf-exclude-dependent">
 				<td class="mmpf-form-td">
 					<input type="text" class="mmpf-form-control" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
 					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
@@ -1021,7 +989,7 @@ class Main {
 					</label>
 				</th>
 			</tr>
-			<tr>
+			<tr class="mmpf-exclude-dependent">
 				<td class="mmpf-form-td">
 					<textarea class="mmpf-form-control" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
 					<p class="description"><?php _e( 'Post excerpt', 'mihdan-mailru-pulse-feed' ); ?></p>
@@ -1029,6 +997,40 @@ class Main {
 			</tr>
 			</tbody>
 		</table>
+		<script>
+			( function() {
+				var excludeRadios = document.getElementsByName( '<?php echo esc_js( $this->slug ); ?>_exclude' );
+				var rows          = document.querySelectorAll( '#<?php echo esc_js( $this->slug ); ?>_meta_box_table .mmpf-exclude-dependent' );
+
+				function isExcluded() {
+					for ( var i = 0; i < excludeRadios.length; i++ ) {
+						if ( excludeRadios[ i ].checked ) {
+							return excludeRadios[ i ].value === 'yes';
+						}
+					}
+
+					return false;
+				}
+
+				function toggle() {
+					var disabled = isExcluded();
+
+					[].forEach.call( rows, function( row ) {
+						row.style.opacity = disabled ? '0.5' : '';
+
+						[].forEach.call( row.querySelectorAll( 'input, textarea' ), function( field ) {
+							field.disabled = disabled;
+						} );
+					} );
+				}
+
+				[].forEach.call( excludeRadios, function( radio ) {
+					radio.addEventListener( 'change', toggle );
+				} );
+
+				toggle();
+			} )();
+		</script>
 		<?php
 	}
 	/**
@@ -1059,20 +1061,31 @@ class Main {
 			delete_post_meta( $post_id, $this->slug . '_exclude' );
 		}
 
-		if ( ! empty( $_POST[ $this->slug . '_title' ] ) ) {
-			update_post_meta( $post_id, $this->slug . '_title', sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_title' ] ) ) );
-		} else {
-			delete_post_meta( $post_id, $this->slug . '_title' );
+		// Title/Excerpt отключаются через JS, если запись исключена из ленты,
+		// и тогда не отправляются в форме — в этом случае сохранённое ранее
+		// значение не трогаем (в отличие от намеренной очистки поля).
+		if ( isset( $_POST[ $this->slug . '_title' ] ) ) {
+			$title = sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_title' ] ) );
+
+			if ( '' !== $title ) {
+				update_post_meta( $post_id, $this->slug . '_title', $title );
+			} else {
+				delete_post_meta( $post_id, $this->slug . '_title' );
+			}
 		}
 
-		if ( ! empty( $_POST[ $this->slug . '_excerpt' ] ) ) {
-			update_post_meta( $post_id, $this->slug . '_excerpt', sanitize_textarea_field( wp_unslash( $_POST[ $this->slug . '_excerpt' ] ) ) );
-		} else {
-			delete_post_meta( $post_id, $this->slug . '_excerpt' );
+		if ( isset( $_POST[ $this->slug . '_excerpt' ] ) ) {
+			$excerpt = sanitize_textarea_field( wp_unslash( $_POST[ $this->slug . '_excerpt' ] ) );
+
+			if ( '' !== $excerpt ) {
+				update_post_meta( $post_id, $this->slug . '_excerpt', $excerpt );
+			} else {
+				delete_post_meta( $post_id, $this->slug . '_excerpt' );
+			}
 		}
 
 		// Радио-кнопки не отправляются в форме, если отключены через JS
-		// (запись исключена или "убита" из ленты) — в этом случае сохранённое
+		// (запись исключена из ленты) — в этом случае сохранённое
 		// ранее значение не трогаем.
 		if ( isset( $_POST[ $this->slug . '_content_type' ] ) ) {
 			$content_type = sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_content_type' ] ) );
