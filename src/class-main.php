@@ -995,7 +995,6 @@ class Main {
 						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="news_only" <?php checked( $content_type, 'news_only' ); ?> /> <?php _e( 'Новости', 'mihdan-mailru-pulse-feed' ); ?></label></li>
 						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_content_type" value="news" <?php checked( $content_type, 'news' ); ?> /> <?php _e( 'Дзен и новости', 'mihdan-mailru-pulse-feed' ); ?></label></li>
 					</ul>
-					<p class="description"><?php _e( 'Переопределяет тип публикации по умолчанию из настроек плагина для этой записи. Недоступно, если запись исключена или "убита" из ленты.', 'mihdan-mailru-pulse-feed' ); ?></p>
 				</td>
 			</tr>
 			<script>
