@@ -1,6 +1,6 @@
 <?php
 /**
- * Шаблон вывода RSS ленты.
+ * Базовый класс генерации RSS ленты.
  *
  * @var Main $this
  * @package mihdan-mailru-pulse-feed
@@ -11,31 +11,35 @@ namespace Mihdan\MailRuPulseFeed;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 
 /**
- * Клас генерации ленты
+ * Базовый клас генерации ленты.
+ *
+ * Общая логика (шапка канала, цикл по постам, рендер XML) живёт здесь.
+ * Наследники отличаются только namespace-ами и способом добавления
+ * полного текста записи в item.
  */
-class Feed {
+abstract class Feed {
 	/**
 	 * Данные ленты
 	 *
 	 * @var array
 	 */
-	private array $data = [];
+	protected array $data = [];
 
 	/**
 	 * Экземпляр класса XmlEncoder
 	 */
-	private XmlEncoder $encoder;
+	protected XmlEncoder $encoder;
 
 	/**
 	 * Экземпляр класса Options
 	 */
-	private Options $options;
+	protected Options $options;
 
 	/**
 	 * Инициализация зависимостей.
 	 *
-	 * @param XmlEncoder  $encoder Экземпляр класса XmlEncoder.
-	 * @param Options     $options Экземпляр класса Options.
+	 * @param XmlEncoder $encoder Экземпляр класса XmlEncoder.
+	 * @param Options    $options Экземпляр класса Options.
 	 */
 	public function __construct( XmlEncoder $encoder, Options $options ) {
 		$this->encoder = $encoder;
@@ -45,25 +49,34 @@ class Feed {
 	}
 
 	/**
+	 * Возвращает список xmlns-атрибутов, специфичных для типа ленты.
+	 *
+	 * @return array<string, string>
+	 */
+	abstract protected function get_namespaces(): array;
+
+	/**
+	 * Добавляет в item поля с полным текстом записи (и всё, что с этим связано).
+	 *
+	 * @param array $item    Item ленты.
+	 * @param int   $post_id ID записи.
+	 *
+	 * @return array
+	 */
+	abstract protected function add_content_fields( array $item, int $post_id ): array;
+
+	/**
 	 * Наполняет массив.
 	 *
 	 * @return array
 	 */
 	public function populate() {
 
-		$type = $this->options->get_option( 'type', 'feed' );
-
 		$this->data['@version']     = '2.0';
 		$this->data['@xmlns:media'] = 'http://search.yahoo.com/mrss/';
 
-		// Для фида в Яндекс.Новости (чтобы работал тег yandex:fulltext).
-		if ( $type === 'agency' ) {
-			$this->data['@xmlns:yandex'] = 'http://news.yandex.ru';
-		} else {
-			$this->data['@xmlns:content'] = 'http://purl.org/rss/1.0/modules/content/';
-			$this->data['@xmlns:dc']      = 'http://purl.org/dc/elements/1.1/';
-			$this->data['@xmlns:atom']    = 'http://www.w3.org/2005/Atom';
-			$this->data['@xmlns:georss']  = 'http://www.georss.org/georss';
+		foreach ( $this->get_namespaces() as $attribute => $url ) {
+			$this->data[ $attribute ] = $url;
 		}
 
 		$channel = [
@@ -98,17 +111,14 @@ class Feed {
 				];
 
 				/**
-				 * Тип ленты.
+				 * Полный текст записи специфичен для типа ленты.
 				 *
 				 * @link https://dzen.ru/help/ru/website/rss-modify.html
 				 * @link https://dzen.ru/help/news/ru/export-content/export
+				 * @link https://dzen.ru/help/ru/news/seamless/rss.html
 				 * @link https://yandex.ru/support/webmaster/search-appearance/news.html
 				 */
-				if ( $type === 'webmaster' || $type === '' ) {
-					$item['content:encoded'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
-				} else {
-					$item['yandex:full-text'] = apply_filters( 'mihdan_mailru_pulse_feed_item_content', $this->get_the_content_feed( get_the_ID() ), get_the_ID() );
-				}
+				$item = $this->add_content_fields( $item, get_the_ID() );
 
 				// Фильтрует конкретный item.
 				$this->data['channel']['item'][] = apply_filters(
@@ -155,7 +165,7 @@ class Feed {
 		$title = get_the_title_rss();
 
 		if ( ! empty( get_post_meta( $post_id, MIHDAN_MAILRU_PULSE_FEED_PREFIX . '_title', true ) ) ) {
-			$title = get_post_meta( $post_id, MIHDAN_MAILRU_PULSE_FEED_PREFIX . '_title', true );
+			$title = esc_html( get_post_meta( $post_id, MIHDAN_MAILRU_PULSE_FEED_PREFIX . '_title', true ) );
 		}
 
 		return apply_filters( 'mihdan_mailru_pulse_feed_item_title', $title, $post_id );
