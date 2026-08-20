@@ -942,32 +942,6 @@ class Main {
 			<tbody>
 			<tr>
 				<th class="mmpf-form-th">
-					<label for="<?php echo esc_attr( $this->slug ); ?>_title">
-						<?php _e( 'Title', 'mihdan-mailru-pulse-feed' ); ?>
-					</label>
-				</th>
-			</tr>
-			<tr>
-				<td class="mmpf-form-td">
-					<input type="text" class="mmpf-form-control" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
-					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th class="mmpf-form-th">
-					<label for="<?php echo esc_attr( $this->slug ); ?>_excerpt">
-						<?php _e( 'Excerpt', 'mihdan-mailru-pulse-feed' ); ?>
-					</label>
-				</th>
-			</tr>
-			<tr>
-				<td class="mmpf-form-td">
-					<textarea class="mmpf-form-control" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
-					<p class="description"><?php _e( 'Post excerpt', 'mihdan-mailru-pulse-feed' ); ?></p>
-				</td>
-			</tr>
-			<tr>
-				<th class="mmpf-form-th">
 					<label><?php _e( 'Исключить из ленты', 'mihdan-mailru-pulse-feed' ); ?></label>
 				</th>
 			</tr>
@@ -1027,6 +1001,32 @@ class Main {
 				} )();
 			</script>
 			<?php endif; ?>
+			<tr>
+				<th class="mmpf-form-th">
+					<label for="<?php echo esc_attr( $this->slug ); ?>_title">
+						<?php _e( 'Title', 'mihdan-mailru-pulse-feed' ); ?>
+					</label>
+				</th>
+			</tr>
+			<tr>
+				<td class="mmpf-form-td">
+					<input type="text" class="mmpf-form-control" value="<?php echo esc_attr( $title ); ?>" name="<?php echo esc_attr( $this->slug ); ?>_title" id="<?php echo esc_attr( $this->slug ); ?>_title" />
+					<p class="description"><?php _e( 'Post title', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th class="mmpf-form-th">
+					<label for="<?php echo esc_attr( $this->slug ); ?>_excerpt">
+						<?php _e( 'Excerpt', 'mihdan-mailru-pulse-feed' ); ?>
+					</label>
+				</th>
+			</tr>
+			<tr>
+				<td class="mmpf-form-td">
+					<textarea class="mmpf-form-control" rows="10" name="<?php echo esc_attr( $this->slug ); ?>_excerpt" id="<?php echo esc_attr( $this->slug ); ?>_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
+					<p class="description"><?php _e( 'Post excerpt', 'mihdan-mailru-pulse-feed' ); ?></p>
+				</td>
+			</tr>
 			</tbody>
 		</table>
 		<?php
