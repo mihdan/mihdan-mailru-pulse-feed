@@ -2,8 +2,8 @@
 Contributors: mihdan
 Tags: zen, vk, mailru, pulse, feed
 Requires at least: 5.3
-Tested up to: 7.0
-Stable tag: 0.8.7
+Tested up to: 7.1
+Stable tag: 0.8.8
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,10 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.8.8 (20.08.2026) =
+* Подтверждена совместимость с WordPress 7.1
+* В метабокс записи добавлен блок "Где публикуем?" — позволяет для формата `Zen & News (seamless)` переопределить contentType (Дзен / Новости / Дзен и новости) отдельно для каждой записи
 
 = 0.8.7 (20.08.2026) =
 * Подтверждена совместимость с WordPress 7.0
