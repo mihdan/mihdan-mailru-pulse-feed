@@ -925,7 +925,6 @@ class Main {
 	 */
 	public function render_meta_box( $post ) {
 		$exclude = (bool) get_post_meta( $post->ID, $this->slug . '_exclude', true );
-		$kill    = (bool) get_post_meta( $post->ID, $this->slug . '_kill', true );
 		$title   = (string) get_post_meta( $post->ID, $this->slug . '_title', true );
 		$excerpt = (string) get_post_meta( $post->ID, $this->slug . '_excerpt', true );
 
@@ -969,16 +968,14 @@ class Main {
 			</tr>
 			<tr>
 				<th class="mmpf-form-th">
-					<label for="<?php echo esc_attr( $this->slug ); ?>_exclude">
-						<?php _e( 'Visibility', 'mihdan-mailru-pulse-feed' ); ?>
-					</label>
+					<label><?php _e( 'Исключить из ленты', 'mihdan-mailru-pulse-feed' ); ?></label>
 				</th>
 			</tr>
 			<tr>
 				<td class="mmpf-form-td">
 					<ul>
-						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_exclude" id="<?php echo esc_attr( $this->slug ); ?>_exclude" <?php checked( $exclude, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_exclude"><?php _e( 'Exclude From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
-						<li><input class="mmpf-form-control" type="checkbox" value="1" name="<?php echo esc_attr( $this->slug ); ?>_kill" id="<?php echo esc_attr( $this->slug ); ?>_kill" <?php checked( $kill, true ); ?>> <label for="<?php echo esc_attr( $this->slug ); ?>_kill"><?php _e( 'Kill From Feed', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_exclude" value="yes" <?php checked( $exclude, true ); ?> /> <?php _e( 'Да', 'mihdan-mailru-pulse-feed' ); ?></label></li>
+						<li><label><input type="radio" name="<?php echo esc_attr( $this->slug ); ?>_exclude" value="no" <?php checked( $exclude, false ); ?> /> <?php _e( 'Нет', 'mihdan-mailru-pulse-feed' ); ?></label></li>
 					</ul>
 				</td>
 			</tr>
@@ -999,12 +996,21 @@ class Main {
 			</tr>
 			<script>
 				( function() {
-					var exclude = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_exclude' );
-					var kill    = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_kill' );
-					var row     = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_content_type_row' );
+					var excludeRadios = document.getElementsByName( '<?php echo esc_js( $this->slug ); ?>_exclude' );
+					var row            = document.getElementById( '<?php echo esc_js( $this->slug ); ?>_content_type_row' );
+
+					function isExcluded() {
+						for ( var i = 0; i < excludeRadios.length; i++ ) {
+							if ( excludeRadios[ i ].checked ) {
+								return excludeRadios[ i ].value === 'yes';
+							}
+						}
+
+						return false;
+					}
 
 					function toggle() {
-						var disabled = ( exclude && exclude.checked ) || ( kill && kill.checked );
+						var disabled = isExcluded();
 
 						row.style.opacity = disabled ? '0.5' : '';
 
@@ -1013,12 +1019,9 @@ class Main {
 						} );
 					}
 
-					if ( exclude ) {
-						exclude.addEventListener( 'change', toggle );
-					}
-					if ( kill ) {
-						kill.addEventListener( 'change', toggle );
-					}
+					[].forEach.call( excludeRadios, function( radio ) {
+						radio.addEventListener( 'change', toggle );
+					} );
 
 					toggle();
 				} )();
@@ -1048,16 +1051,12 @@ class Main {
 			return;
 		}
 
-		if ( isset( $_POST[ $this->slug . '_exclude' ] ) ) {
+		$exclude = isset( $_POST[ $this->slug . '_exclude' ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->slug . '_exclude' ] ) ) : 'no';
+
+		if ( 'yes' === $exclude ) {
 			update_post_meta( $post_id, $this->slug . '_exclude', 1 );
 		} else {
 			delete_post_meta( $post_id, $this->slug . '_exclude' );
-		}
-
-		if ( isset( $_POST[ $this->slug . '_kill' ] ) ) {
-			update_post_meta( $post_id, $this->slug . '_kill', 1 );
-		} else {
-			delete_post_meta( $post_id, $this->slug . '_kill' );
 		}
 
 		if ( ! empty( $_POST[ $this->slug . '_title' ] ) ) {
