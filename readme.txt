@@ -3,7 +3,7 @@ Contributors: mihdan
 Tags: zen, vk, mailru, pulse, feed
 Requires at least: 5.3
 Tested up to: 7.1
-Stable tag: 0.8.8
+Stable tag: 0.9.0
 Requires PHP: 7.4
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -128,6 +128,9 @@ add_filter(
 В настройках плагина в разделе "Лента" поставьте галочку "Полностраничная".
 
 == Changelog ==
+
+= 0.9.0 (28.09.2026) =
+* Теперь в лентах выводится только одна основная категория, указанная через SEO-плагин (Yoast SEO, AIOSEO, TSF, Rank Math) или первая по алфавиту.
 
 = 0.8.8 (20.08.2026) =
 * Подтверждена совместимость с WordPress 7.1

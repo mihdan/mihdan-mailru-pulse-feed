@@ -14,3 +14,6 @@
 #mmpf_plugins .form-table > tbody > tr > th {
 	display: none;
 }
+.mmpf .description {
+	max-width: 600px;
+}

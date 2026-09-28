@@ -90,6 +90,23 @@ class Settings {
 		add_filter( 'install_plugins_nonmenu_tabs', array( $this, 'install_plugins_nonmenu_tabs' ) );
 		add_filter( 'install_plugins_table_api_args_' . MIHDAN_MAILRU_PULSE_FEED_SLUG, array( $this, 'install_plugins_table_api_args' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_filter( 'admin_body_class', array( $this, 'admin_body_class' ) );
+	}
+
+	/**
+	 * Add a body class on the plugin settings page and all its tabs.
+	 *
+	 * @param string $classes Existing body classes.
+	 * @return string
+	 */
+	public function admin_body_class( $classes ) {
+		$screen = get_current_screen();
+
+		if ( $screen && 'settings_page_' . str_replace( '-', '_', MIHDAN_MAILRU_PULSE_FEED_SLUG ) === $screen->id ) {
+			$classes .= ' mmpf';
+		}
+
+		return $classes;
 	}
 
 	public function admin_enqueue_scripts() {
@@ -259,7 +276,7 @@ class Settings {
 				'desc'      => sprintf(
 				/* translators: %s: URL to Dzen help page */
 					__( 'Применяется только для типа ленты <b>Zen & News (seamless)</b>.<br />
-					<b>news</b> — материал с полным текстом новости будет опубликован для показа и в Новостях, и в лентах Дзена. Из сервиса Новости в Дзене сообщение будет вести на статью в вашем канале.<br />
+					<b>news</b> — материал с полным текстом новости будет опубликован для показа и в Новостях, и в лентах Дзена. Из сервиса Новости в Дзене сообщение будет вести на статью в вашем канале. В Дзене этот тип используется для материалов изданий, участвующих в программе бесшовного потребления. Эта программа доступна для СМИ, зарегистрированных в Роскомнадзоре.<br />
 					<b>news_only</b> — уводящая на ваш сайт новость. Подходит только для сервиса Новости в Дзене.<br />
 					<b>blogs_only</b> — статья («вечнозелёный» контент), предназначенная только для рекомендательных лент. Заголовки таких материалов могут не совпадать с заголовками на сайте.<br />
 					Подробнее в <a href="%s" target="_blank">документации</a>.', 'mihdan-mailru-pulse-feed' ),
