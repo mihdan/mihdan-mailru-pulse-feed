@@ -346,9 +346,10 @@ class Main {
 	}
 
 	/**
-	 * Add categories for given post id.
+	 * Add a single category for the given post ID.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param array $item    Feed item.
+	 * @param int   $post_id Post ID.
 	 * @return array
 	 */
 	public function add_categories_to_item( $item, $post_id ) {
@@ -358,25 +359,25 @@ class Main {
 			return $item;
 		}
 
-		foreach ( $categories as $category ) {
-			$item['category'][] = $category;
-		}
+		$item['category'] = reset( $categories );
 
 		return $item;
 	}
 
 	/**
-	 * Get categories for given post id.
+	 * Get the primary category name, or the first term by name as a fallback.
 	 *
 	 * @param int $post_id Post ID.
 	 *
-	 * @return array
+	 * @return string[] At most one category name.
 	 */
 	public function get_categories_for_item( $post_id ) {
 		$taxonomies = $this->wposa_obj->get_option( 'taxonomies', 'feed' );
 
 		$args = [
-			'fields'                 => 'names',
+			'fields'                 => 'all',
+			'orderby'                => 'name',
+			'order'                  => 'ASC',
 			'update_term_meta_cache' => false,
 		];
 
@@ -384,10 +385,82 @@ class Main {
 			return [];
 		}
 
-		$terms = wp_get_object_terms( $post_id, array_values( $taxonomies ), $args );
-		$terms = array_unique( $terms );
+		$taxonomies = array_values( $taxonomies );
+		$terms      = wp_get_object_terms( $post_id, $taxonomies, $args );
 
-		return $terms;
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return [];
+		}
+
+		// Prefer standard categories when several taxonomies are enabled.
+		if ( in_array( 'category', $taxonomies, true ) ) {
+			$taxonomies = array_unique( array_merge( [ 'category' ], $taxonomies ) );
+		}
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$primary_terms = $this->get_seo_primary_terms( $post_id, $taxonomy );
+
+			foreach ( $primary_terms as $primary_term ) {
+				$term_id = $primary_term instanceof WP_Term ? $primary_term->term_id : $primary_term;
+
+				if ( ! is_numeric( $term_id ) || (int) $term_id <= 0 ) {
+					continue;
+				}
+
+				// Ignore deleted, detached or disabled taxonomy terms, even if SEO metadata is stale.
+				foreach ( $terms as $term ) {
+					if ( $taxonomy === $term->taxonomy && (int) $term_id === $term->term_id ) {
+						return [ $term->name ];
+					}
+				}
+			}
+		}
+
+		return [ reset( $terms )->name ];
+	}
+
+	/**
+	 * Read primary terms from active SEO plugins using their available APIs.
+	 *
+	 * The order resolves conflicts when more than one SEO plugin is loaded.
+	 *
+	 * @param int    $post_id  Post ID.
+	 * @param string $taxonomy Taxonomy name.
+	 * @return array Primary term IDs or objects; callers must validate membership.
+	 */
+	private function get_seo_primary_terms( $post_id, $taxonomy ) {
+		$primary_terms = [];
+
+		if ( class_exists( '\WPSEO_Primary_Term' ) ) {
+			$primary_terms[] = ( new \WPSEO_Primary_Term( $taxonomy, $post_id ) )->get_primary_term();
+		}
+
+		if ( function_exists( 'tsf' ) && method_exists( tsf(), 'data' ) ) {
+			$primary_terms[] = tsf()->data()->plugin()->post()->get_primary_term( $post_id, $taxonomy );
+		} elseif ( function_exists( 'the_seo_framework' ) && method_exists( the_seo_framework(), 'get_primary_term' ) ) {
+			// The SEO Framework before version 5.0.
+			$primary_terms[] = the_seo_framework()->get_primary_term( $post_id, $taxonomy );
+		}
+
+		if ( is_callable( [ '\RankMath\Helper', 'get_post_meta' ] ) ) {
+			// Rank Math's get_primary_term() is private; use its public metadata API.
+			$primary_terms[] = \RankMath\Helper::get_post_meta( 'primary_' . $taxonomy, $post_id );
+		}
+
+		if ( function_exists( 'aioseo' ) ) {
+			$primary_term_api = aioseo()->standalone->primaryTerm ?? null;
+
+			if ( is_callable( [ $primary_term_api, 'getPrimaryTerm' ] ) ) {
+				$primary_terms[] = $primary_term_api->getPrimaryTerm( $post_id, $taxonomy );
+			}
+		}
+
+		if ( defined( 'SEOPRESS_VERSION' ) && 'category' === $taxonomy ) {
+			// SEOPress documents this post meta key as its primary category API.
+			$primary_terms[] = get_post_meta( $post_id, '_seopress_robots_primary_cat', true );
+		}
+
+		return $primary_terms;
 	}
 
 	/**
